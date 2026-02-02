@@ -429,6 +429,7 @@
 @endpush
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const tierDataStore = @json($commissionTiers->keyBy('id'));
 
@@ -438,17 +439,10 @@ function getModal(elementId) {
         console.error('Modal element not found:', elementId);
         return null;
     }
-    
-    // Use window.bootstrap which is set by app.js
-    if (typeof window.bootstrap !== 'undefined' && window.bootstrap.Modal) {
-        return window.bootstrap.Modal.getOrCreateInstance(el);
-    }
-    
-    console.error('Bootstrap not available on window object');
-    return null;
+    return new bootstrap.Modal(el);
 }
 
-function initPage() {
+document.addEventListener('DOMContentLoaded', function() {
     const tierForm = document.getElementById('tierForm');
     if (tierForm) {
         tierForm.addEventListener('submit', function(e) {
@@ -456,32 +450,7 @@ function initPage() {
             saveTier();
         });
     }
-}
-
-// Wait for both DOM and Bootstrap to be ready
-function waitForBootstrap(callback, maxAttempts = 50) {
-    let attempts = 0;
-    const check = function() {
-        attempts++;
-        if (typeof window.bootstrap !== 'undefined' && window.bootstrap.Modal) {
-            callback();
-        } else if (attempts < maxAttempts) {
-            setTimeout(check, 100);
-        } else {
-            console.error('Bootstrap failed to load after maximum attempts');
-            callback(); // Try anyway
-        }
-    };
-    check();
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        waitForBootstrap(initPage);
-    });
-} else {
-    waitForBootstrap(initPage);
-}
+});
 
 function showAlert(message, type = 'success') {
     const alertHtml = `
