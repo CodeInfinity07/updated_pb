@@ -41,33 +41,8 @@
     @vite(['resources/js/notifications.js'])
     @vite(['resources/js/app.js'])
 
-    {{-- Bootstrap Ready Utility - ensures bootstrap is available before running inline scripts --}}
-    <script>
-        (function() {
-            var callbacks = [];
-            var bootstrapReady = false;
-
-            function checkBootstrap() {
-                if (window.bootstrap) {
-                    bootstrapReady = true;
-                    callbacks.forEach(function(cb) { cb(); });
-                    callbacks = [];
-                } else {
-                    setTimeout(checkBootstrap, 10);
-                }
-            }
-
-            window.onBootstrapReady = function(callback) {
-                if (bootstrapReady && window.bootstrap) {
-                    callback();
-                } else {
-                    callbacks.push(callback);
-                }
-            };
-
-            checkBootstrap();
-        })();
-    </script>
+    {{-- Bootstrap JS from CDN - loads synchronously before inline scripts to prevent "bootstrap is not defined" errors --}}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     {{-- Global User Details Modal - Available on all admin pages --}}
     @include('admin.partials.user-details-modal')
