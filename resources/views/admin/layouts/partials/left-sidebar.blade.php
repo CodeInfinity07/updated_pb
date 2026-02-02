@@ -386,7 +386,7 @@
 
             @if($user->hasAdminPermission('commission.manage'))
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('admin.commission.index') }}">
+                <a class="nav-link" href="{{ route('admin.referrals.commission.index') }}">
                     <span class="nav-icon">
                         <iconify-icon icon="carbon:deploy-rules"></iconify-icon>
                     </span>

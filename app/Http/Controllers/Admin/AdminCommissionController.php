@@ -136,7 +136,7 @@ class AdminCommissionController extends Controller
                 ]);
             }
 
-            return redirect()->route('admin.commission.index')
+            return redirect()->route('admin.referrals.commission.index')
                 ->with('success', 'Commission tier created successfully.');
 
         } catch (Exception $e) {
@@ -204,7 +204,7 @@ class AdminCommissionController extends Controller
                 ]);
             }
 
-            return redirect()->route('admin.commission.index')
+            return redirect()->route('admin.referrals.commission.index')
                 ->with('success', 'Commission tier updated successfully.');
 
         } catch (Exception $e) {
@@ -249,7 +249,7 @@ class AdminCommissionController extends Controller
                     ], 400);
                 }
 
-                return redirect()->route('admin.commission.index')
+                return redirect()->route('admin.referrals.commission.index')
                     ->with('error', $message);
             }
 
@@ -263,7 +263,7 @@ class AdminCommissionController extends Controller
                 ]);
             }
 
-            return redirect()->route('admin.commission.index')
+            return redirect()->route('admin.referrals.commission.index')
                 ->with('success', "Commission tier '{$tierName}' deleted successfully.");
 
         } catch (Exception $e) {
