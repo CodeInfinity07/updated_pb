@@ -52,20 +52,12 @@ class BotController extends Controller
 
         // Check if bot needs activation (first investment)
         $botActivationRequired = !$user->bot_activated_at;
-        $botFee = InvestmentExpirySetting::getBotFeeAmount();
-        
-        // For first investment, minimum is platform minimum + bot fee
-        if ($botActivationRequired && isset($investmentData['minimum_amount'])) {
-            $platformMinimum = $investmentData['minimum_amount'];
-            $investmentData['first_investment_minimum'] = $platformMinimum + $botFee;
-        }
 
         return view('bot.color-trading-game', compact(
             'user', 
             'investmentData', 
             'investmentStats',
-            'botActivationRequired',
-            'botFee'
+            'botActivationRequired'
         ));
     }
 
@@ -235,25 +227,20 @@ class BotController extends Controller
                 ], 400);
             }
 
-            // Calculate effective minimum (includes bot fee for first investment)
-            $botFee = InvestmentExpirySetting::getBotFeeAmount();
-            $isFirstInvestment = !$user->bot_activated_at;
-            $effectiveMinimum = $isFirstInvestment 
-                ? $investmentData['minimum_amount'] + $botFee 
-                : $investmentData['minimum_amount'];
-
             // Validate input
+            $minimumAmount = $investmentData['minimum_amount'];
+
             $request->validate([
                 'amount' => [
                     'required',
                     'numeric',
-                    'min:' . $effectiveMinimum,
+                    'min:' . $minimumAmount,
                     'max:' . min($investmentData['maximum_amount'], $user->available_balance)
                 ]
             ], [
                 'amount.required' => 'Investment amount is required',
                 'amount.numeric' => 'Amount must be a valid number',
-                'amount.min' => 'Minimum investment amount is $' . number_format($effectiveMinimum, 2) . ($isFirstInvestment ? ' (includes $' . number_format($botFee, 2) . ' bot activation fee)' : ''),
+                'amount.min' => 'Minimum investment amount is $' . number_format($minimumAmount, 2),
                 'amount.max' => 'Maximum investment amount is $' . number_format(min($investmentData['maximum_amount'], $user->available_balance), 2)
             ]);
 

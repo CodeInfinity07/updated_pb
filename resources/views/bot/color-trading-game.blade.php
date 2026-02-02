@@ -243,16 +243,12 @@
                     <div class="card-body">
                         @if($investmentData['can_invest'])
                             @if($botActivationRequired ?? false)
-                                <div class="alert alert-warning border-warning mb-4">
+                                <div class="alert alert-info border-info mb-4">
                                     <div class="d-flex align-items-start">
-                                        <iconify-icon icon="solar:shield-check-bold-duotone" class="me-2 fs-4 text-warning"></iconify-icon>
+                                        <iconify-icon icon="solar:shield-check-bold-duotone" class="me-2 fs-4 text-info"></iconify-icon>
                                         <div>
-                                            <h6 class="alert-heading mb-1">Bot Activation Required</h6>
-                                            <p class="mb-2 small">Your first investment activates your trading bot. A one-time fee of <strong>${{ number_format($botFee ?? 10, 2) }}</strong> will be included.</p>
-                                            <small class="text-muted">
-                                                First investment minimum: <strong>${{ number_format($investmentData['first_investment_minimum'] ?? 30, 2) }}</strong>
-                                                (includes ${{ number_format($botFee ?? 10, 2) }} activation fee)
-                                            </small>
+                                            <h6 class="alert-heading mb-1">First Investment</h6>
+                                            <p class="mb-0 small">Your first investment will activate your trading bot automatically.</p>
                                         </div>
                                     </div>
                                 </div>
