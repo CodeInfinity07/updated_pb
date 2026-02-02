@@ -428,19 +428,9 @@
 </style>
 @endpush
 
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+@section('script')
 <script>
 const tierDataStore = @json($commissionTiers->keyBy('id'));
-
-function getModal(elementId) {
-    const el = document.getElementById(elementId);
-    if (!el) {
-        console.error('Modal element not found:', elementId);
-        return null;
-    }
-    return new bootstrap.Modal(el);
-}
 
 document.addEventListener('DOMContentLoaded', function() {
     const tierForm = document.getElementById('tierForm');
@@ -473,12 +463,7 @@ function showAddTierModal() {
     document.getElementById('tierColor').value = '#6c757d';
     document.getElementById('tierActive').checked = true;
     
-    const modal = getModal('tierModal');
-    if (modal) {
-        modal.show();
-    } else {
-        showAlert('Could not open modal. Please refresh the page.', 'danger');
-    }
+    new bootstrap.Modal(document.getElementById('tierModal')).show();
 }
 
 function editTier(id) {
@@ -502,12 +487,7 @@ function editTier(id) {
     document.getElementById('tierDescription').value = tier.description || '';
     document.getElementById('tierActive').checked = tier.is_active;
 
-    const modal = getModal('tierModal');
-    if (modal) {
-        modal.show();
-    } else {
-        showAlert('Could not open modal. Please refresh the page.', 'danger');
-    }
+    new bootstrap.Modal(document.getElementById('tierModal')).show();
 }
 
 function saveTier() {
@@ -675,12 +655,7 @@ function seedDefaultTiers() {
 }
 
 function showCalculator() {
-    const modal = getModal('calculatorModal');
-    if (modal) {
-        modal.show();
-    } else {
-        showAlert('Could not open calculator. Please refresh the page.', 'danger');
-    }
+    new bootstrap.Modal(document.getElementById('calculatorModal')).show();
 }
 
 function calculatePreview(tierId) {
@@ -741,4 +716,4 @@ function exportSettings() {
     window.open("{{ route('admin.referrals.commission.export') }}", '_blank');
 }
 </script>
-@endpush
+@endsection
