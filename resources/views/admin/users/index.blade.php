@@ -777,12 +777,25 @@
 
 @section('script')
 <script>
+// Wait for Bootstrap to be available
+function waitForBootstrap(callback) {
+    if (typeof bootstrap !== 'undefined') {
+        callback();
+    } else {
+        setTimeout(() => waitForBootstrap(callback), 50);
+    }
+}
+
 // Global variables for impersonation
 let currentImpersonationUserId = null;
 let isSubmittingImpersonation = false;
 
 // Impersonate user function
 function impersonateUser(userId, userName, userEmail) {
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap not loaded yet');
+        return;
+    }
     currentImpersonationUserId = userId;
     
     // Populate user details in modal
@@ -868,10 +881,12 @@ function confirmImpersonation() {
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+    // Wait for Bootstrap then initialize tooltips
+    waitForBootstrap(function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     });
     
     // Impersonation confirmation checkbox handler

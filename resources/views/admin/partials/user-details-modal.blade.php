@@ -23,14 +23,20 @@
 <script>
 let globalUserDetailsModal = null;
 
-document.addEventListener('DOMContentLoaded', function() {
+function initGlobalUserDetailsModal() {
+    if (typeof bootstrap === 'undefined') {
+        setTimeout(initGlobalUserDetailsModal, 100);
+        return;
+    }
     const modalEl = document.getElementById('globalUserDetailsModal');
     if (modalEl) {
         globalUserDetailsModal = new bootstrap.Modal(modalEl);
     }
-});
+}
 
-function showUserDetails(userId) {
+document.addEventListener('DOMContentLoaded', initGlobalUserDetailsModal);
+
+function showGlobalUserDetails(userId) {
     if (!userId) return;
     
     const modalEl = document.getElementById('globalUserDetailsModal');
@@ -43,10 +49,12 @@ function showUserDetails(userId) {
     
     contentEl.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
     
-    if (!globalUserDetailsModal) {
+    if (!globalUserDetailsModal && typeof bootstrap !== 'undefined') {
         globalUserDetailsModal = new bootstrap.Modal(modalEl);
     }
-    globalUserDetailsModal.show();
+    if (globalUserDetailsModal) {
+        globalUserDetailsModal.show();
+    }
     
     fetch(`{{ url('admin/users') }}/${userId}`, {
         headers: {
