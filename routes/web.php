@@ -687,15 +687,12 @@ Route::middleware('auth', '2fa', 'password.change')->group(function () {
             Route::get('/tree/data', [AdminReferralController::class, 'getTreeData'])->name('tree.data');
             Route::get('/tree/stats', [AdminReferralController::class, 'getTreeStats'])->name('tree.stats');
             Route::get('/search/users', [AdminReferralController::class, 'searchUsers'])->name('search.users');
-            Route::get('/{referral}', [AdminReferralController::class, 'show'])->name('show');
-            Route::post('/{referral}/update-status', [AdminReferralController::class, 'updateStatus'])->name('update-status');
             Route::post('/bulk/update-status', [AdminReferralController::class, 'bulkUpdateStatus'])->name('bulk.update-status');
             Route::get('/analytics/data', [AdminReferralController::class, 'analytics'])->name('analytics');
             Route::get('/api/dashboard-stats', [AdminReferralController::class, 'getDashboardStats'])->name('api.dashboard-stats');
             Route::get('/api/top-sponsors', [AdminReferralController::class, 'topSponsors'])->name('api.top-sponsors');
             Route::get('/export/csv', [AdminReferralController::class, 'export'])->name('export');
             Route::get('/search/sponsors', [AdminReferralController::class, 'searchSponsors'])->name('search.sponsors');
-            Route::get('/{referral}/commission-history', [AdminReferralController::class, 'commissionHistory'])->name('commission-history');
 
             // Commission Tiers Management (tiered commission rules like old project)
             Route::prefix('commission')->name('commission.')->group(function () {
@@ -716,6 +713,11 @@ Route::middleware('auth', '2fa', 'password.change')->group(function () {
                 Route::post('/simulate', [AdminCommissionSimulatorController::class, 'simulate'])->name('simulate');
                 Route::get('/search-users', [AdminCommissionSimulatorController::class, 'searchUsers'])->name('search-users');
             });
+
+            // Wildcard routes must be last to avoid catching named routes
+            Route::get('/{referral}', [AdminReferralController::class, 'show'])->name('show');
+            Route::post('/{referral}/update-status', [AdminReferralController::class, 'updateStatus'])->name('update-status');
+            Route::get('/{referral}/commission-history', [AdminReferralController::class, 'commissionHistory'])->name('commission-history');
         });
 
         // Standalone Commission routes (for backward compatibility)
