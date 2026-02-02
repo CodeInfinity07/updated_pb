@@ -165,7 +165,8 @@ class AdminCommissionSimulatorController extends Controller
             
             if ($tier) {
                 $tierName = $tier->tier_name;
-                $profitSharingConfig = InvestmentPlanProfitSharing::where('investment_plan_tier_id', $tier->id)
+                $profitSharingConfig = \DB::table('investment_plan_profit_sharing')
+                    ->where('investment_plan_tier_id', $tier->id)
                     ->where('is_active', true)
                     ->first();
             }
