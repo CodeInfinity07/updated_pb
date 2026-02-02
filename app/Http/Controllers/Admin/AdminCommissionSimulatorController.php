@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserInvestment;
+use App\Models\InvestmentPlanTier;
 use App\Models\ReferralCommissionLevel;
 use App\Models\CommissionSetting;
 use App\Models\Setting;
@@ -92,7 +93,13 @@ class AdminCommissionSimulatorController extends Controller
             $plan = $investment->investmentPlan;
             if (!$plan) continue;
 
-            $dailyRoi = (float) ($plan->base_interest_rate ?? $plan->interest_rate ?? 0);
+            $tier = InvestmentPlanTier::where('investment_plan_id', $plan->id)
+                ->where('tier_level', $investment->tier_level ?? 1)
+                ->first();
+
+            $dailyRoi = $tier ? (float) $tier->interest_rate : 0;
+            $tierName = $tier ? $tier->tier_name : 'Unknown Tier';
+            
             $roiAmount = round(($investment->amount * $dailyRoi) / 100, 4);
             
             $expiryCap = $investment->amount * $baseMultiplier;
@@ -112,6 +119,8 @@ class AdminCommissionSimulatorController extends Controller
             $roiDetails[] = [
                 'investment_id' => $investment->id,
                 'plan_name' => $plan->name,
+                'tier_name' => $tierName,
+                'tier_level' => $investment->tier_level ?? 1,
                 'amount' => $investment->amount,
                 'roi_percentage' => $dailyRoi,
                 'roi_amount' => $roiAmount,
