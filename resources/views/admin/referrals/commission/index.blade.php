@@ -431,18 +431,41 @@
 @push('scripts')
 <script>
 const tierDataStore = @json($commissionTiers->keyBy('id'));
-let tierModal;
-let calculatorModal;
+let tierModal = null;
+let calculatorModal = null;
+
+function initModals() {
+    try {
+        const tierModalEl = document.getElementById('tierModal');
+        const calculatorModalEl = document.getElementById('calculatorModal');
+        
+        if (tierModalEl && typeof bootstrap !== 'undefined') {
+            tierModal = new bootstrap.Modal(tierModalEl);
+        }
+        if (calculatorModalEl && typeof bootstrap !== 'undefined') {
+            calculatorModal = new bootstrap.Modal(calculatorModalEl);
+        }
+        
+        const tierForm = document.getElementById('tierForm');
+        if (tierForm) {
+            tierForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveTier();
+            });
+        }
+    } catch (error) {
+        console.error('Error initializing modals:', error);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
-    tierModal = new bootstrap.Modal(document.getElementById('tierModal'));
-    calculatorModal = new bootstrap.Modal(document.getElementById('calculatorModal'));
-
-    document.getElementById('tierForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveTier();
-    });
+    initModals();
 });
+
+// Fallback initialization if DOMContentLoaded already fired
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(initModals, 100);
+}
 
 function showAlert(message, type = 'success') {
     const alertHtml = `
@@ -464,15 +487,33 @@ function showAddTierModal() {
     document.getElementById('tierId').value = '';
     document.getElementById('tierColor').value = '#6c757d';
     document.getElementById('tierActive').checked = true;
-    tierModal.show();
+    
+    if (!tierModal) {
+        const tierModalEl = document.getElementById('tierModal');
+        if (tierModalEl && typeof bootstrap !== 'undefined') {
+            tierModal = new bootstrap.Modal(tierModalEl);
+        }
+    }
+    
+    if (tierModal) {
+        tierModal.show();
+    } else {
+        showAlert('Could not open modal. Please refresh the page.', 'danger');
+    }
 }
 
 function editTier(id) {
+    console.log('editTier called with id:', id);
+    console.log('tierDataStore:', tierDataStore);
+    
     const tier = tierDataStore[id];
     if (!tier) {
+        console.error('Tier not found for id:', id);
         showAlert('Tier not found', 'danger');
         return;
     }
+
+    console.log('Found tier:', tier);
 
     document.getElementById('tierModalTitle').textContent = 'Edit Tier: ' + tier.name;
     document.getElementById('tierId').value = tier.id;
@@ -488,7 +529,20 @@ function editTier(id) {
     document.getElementById('tierDescription').value = tier.description || '';
     document.getElementById('tierActive').checked = tier.is_active;
 
-    tierModal.show();
+    if (!tierModal) {
+        console.log('tierModal not initialized, reinitializing...');
+        const tierModalEl = document.getElementById('tierModal');
+        if (tierModalEl && typeof bootstrap !== 'undefined') {
+            tierModal = new bootstrap.Modal(tierModalEl);
+        }
+    }
+    
+    if (tierModal) {
+        tierModal.show();
+    } else {
+        console.error('Could not initialize tierModal');
+        showAlert('Could not open modal. Please refresh the page.', 'danger');
+    }
 }
 
 function saveTier() {
