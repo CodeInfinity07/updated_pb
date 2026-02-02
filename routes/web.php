@@ -696,23 +696,23 @@ Route::middleware('auth', '2fa', 'password.change')->group(function () {
             Route::get('/search/sponsors', [AdminReferralController::class, 'searchSponsors'])->name('search.sponsors');
             Route::get('/{referral}/commission-history', [AdminReferralController::class, 'commissionHistory'])->name('commission-history');
 
-            // Commission Tiers Management (tiered commission rules)
+            // Commission Tiers Management (tiered commission rules like old project)
             Route::prefix('commission')->name('commission.')->group(function () {
-                Route::get('/', [AdminReferralController::class, 'commissionSettings'])->name('index');
-                Route::post('/tiers', [AdminReferralController::class, 'storeCommissionTier'])->name('tiers.store');
-                Route::put('/tiers/{tier}', [AdminReferralController::class, 'updateCommissionTier'])->name('tiers.update');
-                Route::delete('/tiers/{tier}', [AdminReferralController::class, 'deleteCommissionTier'])->name('tiers.destroy');
-                Route::post('/update-user-tiers', [AdminReferralController::class, 'updateUserTiers'])->name('update-user-tiers');
-                Route::post('/seed-defaults', [AdminReferralController::class, 'seedDefaultTiers'])->name('seed-defaults');
+                Route::get('/', [AdminCommissionController::class, 'index'])->name('index');
+                Route::post('/tiers', [AdminCommissionController::class, 'store'])->name('tiers.store');
+                Route::put('/tiers/{commissionSetting}', [AdminCommissionController::class, 'update'])->name('tiers.update');
+                Route::delete('/tiers/{commissionSetting}', [AdminCommissionController::class, 'destroy'])->name('tiers.destroy');
+                Route::post('/tiers/{commissionSetting}/toggle-status', [AdminCommissionController::class, 'toggleStatus'])->name('tiers.toggle-status');
+                Route::post('/update-user-tiers', [AdminCommissionController::class, 'updateUserTiers'])->name('update-user-tiers');
+                Route::post('/seed-defaults', [AdminCommissionController::class, 'seedDefaults'])->name('seed-defaults');
+                Route::post('/calculate-preview', [AdminCommissionController::class, 'calculatePreview'])->name('calculate-preview');
+                Route::get('/export', [AdminCommissionController::class, 'export'])->name('export');
             });
         });
 
-        // Commission Settings (10-level referral system)
+        // Standalone Commission routes (for backward compatibility)
         Route::prefix('commission')->name('commission.')->group(function () {
-            Route::get('/', [AdminCommissionController::class, 'index'])->name('index');
-            Route::post('/update', [AdminCommissionController::class, 'update'])->name('update');
-            Route::post('/reset', [AdminCommissionController::class, 'resetDefaults'])->name('reset');
-            Route::post('/calculate-preview', [AdminCommissionController::class, 'calculatePreview'])->name('calculate-preview');
+            Route::get('/', [AdminCommissionController::class, 'index'])->name('main');
         });
 
         // Package Expiry Settings (3x/6x multipliers, bot fees, referral criteria)
