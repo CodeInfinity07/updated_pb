@@ -35,7 +35,7 @@ import QRCode from 'qrcode';
 window.QRCode = QRCode;
 window.jQuery = window.$ = $
 
-import bootstrap from 'bootstrap/dist/js/bootstrap.min';
+import * as bootstrap from 'bootstrap';
 
 window.bootstrap = bootstrap;
 
