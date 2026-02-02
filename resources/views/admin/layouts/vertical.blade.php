@@ -41,13 +41,11 @@
     @vite(['resources/js/notifications.js'])
     @vite(['resources/js/app.js'])
 
-    {{-- Bootstrap JS from CDN - loads synchronously before inline scripts to prevent "bootstrap is not defined" errors --}}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     {{-- Global User Details Modal - Available on all admin pages --}}
     @include('admin.partials.user-details-modal')
 
     @yield('script')
+    @stack('scripts')
 
 </body>
 

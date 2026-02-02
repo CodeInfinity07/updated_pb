@@ -366,7 +366,7 @@
     </div>
 </form>
 
-@section('script')
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Avatar preview
@@ -411,4 +411,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+@endpush
+
 @endsection

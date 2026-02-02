@@ -70,23 +70,10 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait for bootstrap to be available before checking prizes
-    function waitForBootstrapAndCheck() {
-        if (typeof bootstrap === 'undefined') {
-            setTimeout(waitForBootstrapAndCheck, 50);
-            return;
-        }
-        checkPendingPrizes();
-    }
-    waitForBootstrapAndCheck();
+    checkPendingPrizes();
 });
 
 function checkPendingPrizes() {
-    if (typeof bootstrap === 'undefined') {
-        console.error('Bootstrap not loaded');
-        return;
-    }
-    
     fetch('{{ route("user.leaderboards.api.pending-prizes") }}', {
         headers: {
             'Accept': 'application/json',

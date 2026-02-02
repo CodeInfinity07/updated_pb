@@ -23,28 +23,15 @@
 <script>
 let globalUserDetailsModal = null;
 
-function initGlobalUserDetailsModal() {
-    if (typeof bootstrap === 'undefined') {
-        setTimeout(initGlobalUserDetailsModal, 50);
-        return;
-    }
+document.addEventListener('DOMContentLoaded', function() {
     const modalEl = document.getElementById('globalUserDetailsModal');
     if (modalEl) {
         globalUserDetailsModal = new bootstrap.Modal(modalEl);
     }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    initGlobalUserDetailsModal();
 });
 
 function showUserDetails(userId) {
     if (!userId) return;
-    
-    if (typeof bootstrap === 'undefined') {
-        console.error('Bootstrap not loaded');
-        return;
-    }
     
     const modalEl = document.getElementById('globalUserDetailsModal');
     const contentEl = document.getElementById('globalUserModalContent');
