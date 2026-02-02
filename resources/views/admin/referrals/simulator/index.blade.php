@@ -329,7 +329,6 @@ function displayProfitShareResults(profitShareData) {
 }
 
 function displayReferralCommissionResults(commissionData, investmentAmount) {
-    const dsc = commissionData.direct_sponsor_commission;
     const tbc = commissionData.tier_based_commission;
     
     let html = `
@@ -338,39 +337,10 @@ function displayReferralCommissionResults(commissionData, investmentAmount) {
         </div>
         
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-12">
                 <div class="card mb-3">
                     <div class="card-header bg-success text-white">
-                        <h6 class="mb-0 text-white">Direct Sponsor Commission (Current System)</h6>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-sm mb-0">
-                            <tr>
-                                <td>Commission Rate:</td>
-                                <td class="text-end"><strong>${dsc.percentage}%</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Commission Amount:</td>
-                                <td class="text-end text-success fw-bold">$${dsc.amount.toLocaleString('en-US', {minimumFractionDigits: 4})}</td>
-                            </tr>
-                            <tr>
-                                <td>Will Receive:</td>
-                                <td class="text-end">
-                                    <span class="badge ${dsc.will_receive ? 'bg-success' : 'bg-danger'}">
-                                        ${dsc.will_receive ? 'YES' : 'NO'}
-                                    </span>
-                                    ${dsc.skip_reason ? `<br><small class="text-danger">${dsc.skip_reason}</small>` : ''}
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-header bg-secondary text-white">
-                        <h6 class="mb-0 text-white">Tier-Based Commission (Old System Reference)</h6>
+                        <h6 class="mb-0 text-white">Tier-Based Commission</h6>
                     </div>
                     <div class="card-body">
                         <p class="mb-2">
