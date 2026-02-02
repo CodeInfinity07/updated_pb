@@ -695,6 +695,16 @@ Route::middleware('auth', '2fa', 'password.change')->group(function () {
             Route::get('/export/csv', [AdminReferralController::class, 'export'])->name('export');
             Route::get('/search/sponsors', [AdminReferralController::class, 'searchSponsors'])->name('search.sponsors');
             Route::get('/{referral}/commission-history', [AdminReferralController::class, 'commissionHistory'])->name('commission-history');
+
+            // Commission Tiers Management (tiered commission rules)
+            Route::prefix('commission')->name('commission.')->group(function () {
+                Route::get('/', [AdminReferralController::class, 'commissionSettings'])->name('index');
+                Route::post('/tiers', [AdminReferralController::class, 'storeCommissionTier'])->name('tiers.store');
+                Route::put('/tiers/{tier}', [AdminReferralController::class, 'updateCommissionTier'])->name('tiers.update');
+                Route::delete('/tiers/{tier}', [AdminReferralController::class, 'deleteCommissionTier'])->name('tiers.destroy');
+                Route::post('/update-user-tiers', [AdminReferralController::class, 'updateUserTiers'])->name('update-user-tiers');
+                Route::post('/seed-defaults', [AdminReferralController::class, 'seedDefaultTiers'])->name('seed-defaults');
+            });
         });
 
         // Commission Settings (10-level referral system)

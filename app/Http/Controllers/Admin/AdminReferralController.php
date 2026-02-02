@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserProfile;
+use App\Models\CommissionSetting;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -1006,5 +1008,218 @@ class AdminReferralController extends Controller
         }
 
         return User::with('sponsor')->whereIn('sponsor_id', $currentLevelIds)->get();
+    }
+
+    /**
+     * Display commission tiers settings page.
+     */
+    public function commissionSettings(Request $request): View
+    {
+        $user = \Auth::user();
+
+        // Get all commission tiers
+        $commissionTiers = CommissionSetting::orderBy('sort_order')->orderBy('level')->get();
+
+        // Platform statistics
+        $totalUsers = User::where('role', 'user')->count();
+        $totalActiveUsers = User::where('role', 'user')->where('status', 'active')->count();
+        $totalCommissionsPaid = Transaction::where('type', 'commission')
+            ->where('status', 'completed')
+            ->sum('amount');
+
+        // Commission simulation for $1000 transaction
+        $simulationAmount = $request->get('simulation_amount', 1000);
+        $commissionSimulation = [];
+        foreach ($commissionTiers as $tier) {
+            $commissionSimulation[$tier->level] = [
+                'level_1' => $simulationAmount * ($tier->commission_level_1 / 100),
+                'level_2' => $simulationAmount * ($tier->commission_level_2 / 100),
+                'level_3' => $simulationAmount * ($tier->commission_level_3 / 100),
+                'total' => $simulationAmount * (($tier->commission_level_1 + $tier->commission_level_2 + $tier->commission_level_3) / 100)
+            ];
+        }
+
+        return view('admin.referrals.commission.index', compact(
+            'user',
+            'commissionTiers',
+            'totalUsers',
+            'totalActiveUsers',
+            'totalCommissionsPaid',
+            'commissionSimulation',
+            'simulationAmount'
+        ));
+    }
+
+    /**
+     * Store a new commission tier.
+     */
+    public function storeCommissionTier(Request $request): JsonResponse
+    {
+        $request->validate([
+            'level' => 'required|integer|min:1|unique:commission_settings,level',
+            'name' => 'required|string|max:255',
+            'min_investment' => 'required|numeric|min:0',
+            'min_direct_referrals' => 'required|integer|min:0',
+            'min_indirect_referrals' => 'required|integer|min:0',
+            'commission_level_1' => 'required|numeric|min:0|max:100',
+            'commission_level_2' => 'required|numeric|min:0|max:100',
+            'commission_level_3' => 'required|numeric|min:0|max:100',
+            'color' => 'nullable|string|max:7',
+            'description' => 'nullable|string',
+        ]);
+
+        $tier = CommissionSetting::create([
+            'level' => $request->level,
+            'name' => $request->name,
+            'min_investment' => $request->min_investment,
+            'min_direct_referrals' => $request->min_direct_referrals,
+            'min_indirect_referrals' => $request->min_indirect_referrals,
+            'commission_level_1' => $request->commission_level_1,
+            'commission_level_2' => $request->commission_level_2,
+            'commission_level_3' => $request->commission_level_3,
+            'color' => $request->color,
+            'description' => $request->description,
+            'is_active' => true,
+            'sort_order' => CommissionSetting::max('sort_order') + 1,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Commission tier created successfully',
+            'tier' => $tier
+        ]);
+    }
+
+    /**
+     * Update a commission tier.
+     */
+    public function updateCommissionTier(Request $request, CommissionSetting $tier): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'min_investment' => 'required|numeric|min:0',
+            'min_direct_referrals' => 'required|integer|min:0',
+            'min_indirect_referrals' => 'required|integer|min:0',
+            'commission_level_1' => 'required|numeric|min:0|max:100',
+            'commission_level_2' => 'required|numeric|min:0|max:100',
+            'commission_level_3' => 'required|numeric|min:0|max:100',
+            'color' => 'nullable|string|max:7',
+            'description' => 'nullable|string',
+            'is_active' => 'boolean',
+        ]);
+
+        $tier->update($request->only([
+            'name',
+            'min_investment',
+            'min_direct_referrals',
+            'min_indirect_referrals',
+            'commission_level_1',
+            'commission_level_2',
+            'commission_level_3',
+            'color',
+            'description',
+            'is_active'
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Commission tier updated successfully',
+            'tier' => $tier
+        ]);
+    }
+
+    /**
+     * Delete a commission tier.
+     */
+    public function deleteCommissionTier(CommissionSetting $tier): JsonResponse
+    {
+        $tier->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Commission tier deleted successfully'
+        ]);
+    }
+
+    /**
+     * Update user tiers based on their investment and referral counts.
+     */
+    public function updateUserTiers(): JsonResponse
+    {
+        $updated = 0;
+        $users = User::where('role', 'user')->with('profile')->get();
+        $tiers = CommissionSetting::where('is_active', true)
+            ->orderBy('level', 'desc')
+            ->get();
+
+        foreach ($users as $user) {
+            $directReferrals = User::where('sponsor_id', $user->id)->count();
+            $indirectReferrals = $this->countIndirectReferrals($user->id);
+            $totalInvested = $user->total_invested ?? 0;
+
+            $newLevel = 1; // Default level
+            foreach ($tiers as $tier) {
+                if ($totalInvested >= $tier->min_investment &&
+                    $directReferrals >= $tier->min_direct_referrals &&
+                    $indirectReferrals >= $tier->min_indirect_referrals) {
+                    $newLevel = $tier->level;
+                    break;
+                }
+            }
+
+            if ($user->user_level !== $newLevel) {
+                $user->update(['user_level' => $newLevel]);
+                $updated++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Updated {$updated} user tiers"
+        ]);
+    }
+
+    /**
+     * Count indirect referrals (Level 2+) for a user.
+     */
+    private function countIndirectReferrals(int $userId): int
+    {
+        $count = 0;
+        $currentLevelIds = User::where('sponsor_id', $userId)->pluck('id')->toArray();
+
+        for ($level = 2; $level <= 3; $level++) {
+            if (empty($currentLevelIds)) break;
+            $nextLevelIds = User::whereIn('sponsor_id', $currentLevelIds)->pluck('id')->toArray();
+            $count += count($nextLevelIds);
+            $currentLevelIds = $nextLevelIds;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Seed default commission tiers.
+     */
+    public function seedDefaultTiers(): JsonResponse
+    {
+        $defaults = [
+            ['level' => 1, 'name' => 'Starter', 'min_investment' => 0, 'min_direct_referrals' => 0, 'min_indirect_referrals' => 0, 'commission_level_1' => 5, 'commission_level_2' => 2, 'commission_level_3' => 1, 'color' => '#6c757d'],
+            ['level' => 2, 'name' => 'Bronze', 'min_investment' => 100, 'min_direct_referrals' => 3, 'min_indirect_referrals' => 0, 'commission_level_1' => 6, 'commission_level_2' => 3, 'commission_level_3' => 1.5, 'color' => '#cd7f32'],
+            ['level' => 3, 'name' => 'Silver', 'min_investment' => 500, 'min_direct_referrals' => 5, 'min_indirect_referrals' => 5, 'commission_level_1' => 7, 'commission_level_2' => 4, 'commission_level_3' => 2, 'color' => '#c0c0c0'],
+            ['level' => 4, 'name' => 'Gold', 'min_investment' => 1000, 'min_direct_referrals' => 10, 'min_indirect_referrals' => 15, 'commission_level_1' => 8, 'commission_level_2' => 5, 'commission_level_3' => 2.5, 'color' => '#ffd700'],
+            ['level' => 5, 'name' => 'Diamond', 'min_investment' => 5000, 'min_direct_referrals' => 20, 'min_indirect_referrals' => 50, 'commission_level_1' => 10, 'commission_level_2' => 6, 'commission_level_3' => 3, 'color' => '#b9f2ff'],
+        ];
+
+        foreach ($defaults as $index => $data) {
+            CommissionSetting::updateOrCreate(
+                ['level' => $data['level']],
+                array_merge($data, ['sort_order' => $index + 1, 'is_active' => true])
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Default commission tiers seeded successfully'
+        ]);
     }
 }
