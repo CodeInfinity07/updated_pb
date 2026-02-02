@@ -987,7 +987,9 @@ Route::middleware('auth', '2fa', 'password.change')->group(function () {
     */
 
     Route::middleware(['verified', 'verification.required:phone'])->prefix('bot')->name('bot.')->group(function () {
-        Route::get('/', [BotController::class, 'colorTradingGame'])->name('index');
+        Route::get('/', [BotController::class, 'index'])->name('index');
+        Route::get('/color-trading', [BotController::class, 'colorTradingSetup'])->name('color-trading');
+        Route::get('/color-trading/game', [BotController::class, 'colorTradingGame'])->name('color-trading.game');
         Route::get('/investments/{investment}/process-return', [BotController::class, 'processAllDueReturns'])->name('investments.process-return');
         Route::get('/investment/{investment}/return-status', [BotController::class, 'getInvestmentReturnStatus'])->name('investment.return-status');
         Route::post('/color-trading/link', [BotController::class, 'linkGameAccount'])->name('color-trading.link');

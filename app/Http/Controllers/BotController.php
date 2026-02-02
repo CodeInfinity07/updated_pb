@@ -38,6 +38,30 @@ class BotController extends Controller
     }
 
     /**
+     * Display the games selection page
+     */
+    public function index()
+    {
+        $user = User::with('profile')->find(Auth::id());
+        return view('bot.index', compact('user'));
+    }
+
+    /**
+     * Display Color Trading setup page
+     */
+    public function colorTradingSetup()
+    {
+        $user = User::with('profile')->find(Auth::id());
+
+        if ($user->profile && $user->profile->uname) {
+            return redirect()->route('bot.color-trading.game')
+                ->with('success', 'Game account is already linked!');
+        }
+
+        return view('bot.color-trading-setup', compact('user'));
+    }
+
+    /**
      * Display Color Trading game page with investment functionality
      */
     public function colorTradingGame()
