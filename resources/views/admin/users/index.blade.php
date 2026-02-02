@@ -775,16 +775,11 @@
 
 @endsection
 
-@section('vite_scripts')
+@section('script')
 <script>
 // Global variables for impersonation
 let currentImpersonationUserId = null;
 let isSubmittingImpersonation = false;
-
-// Helper function to get Bootstrap (wait if not yet loaded)
-function getBootstrap() {
-    return window.bootstrap;
-}
 
 // Impersonate user function
 function impersonateUser(userId, userName, userEmail) {
@@ -812,12 +807,7 @@ function impersonateUser(userId, userName, userEmail) {
     document.getElementById('confirmImpersonationBtn').disabled = true;
     
     // Show modal
-    const bsModal = getBootstrap();
-    if (!bsModal) {
-        console.error('Bootstrap not loaded yet');
-        return;
-    }
-    const modal = new bsModal.Modal(document.getElementById('impersonationModal'));
+    const modal = new bootstrap.Modal(document.getElementById('impersonationModal'));
     modal.show();
 }
 
@@ -850,7 +840,7 @@ function confirmImpersonation() {
     .then(data => {
         if (data.success) {
             // Close modal and reset
-            getBootstrap().Modal.getInstance(document.getElementById('impersonationModal')).hide();
+            bootstrap.Modal.getInstance(document.getElementById('impersonationModal')).hide();
             btn.disabled = false;
             btn.innerHTML = '<iconify-icon icon="material-symbols-light:login" class="me-1"></iconify-icon>Start Impersonation';
             isSubmittingImpersonation = false;
@@ -879,11 +869,9 @@ function confirmImpersonation() {
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips
-    const bs = getBootstrap();
-    if (!bs) return;
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bs.Tooltip(tooltipTriggerEl);
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
     
     // Impersonation confirmation checkbox handler
@@ -953,7 +941,7 @@ function toggleMobileDetails(userId) {
 
 // Show user details modal
 function showUserDetails(userId) {
-    const modal = new (getBootstrap()).Modal(document.getElementById('userDetailsModal'));
+    const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
     modal.show();
     
     fetch(`{{ url('admin/users') }}/${userId}`)
@@ -1142,7 +1130,7 @@ function showBalanceModal(userId, userName, totalBalanceUsd, primaryCurrency, pr
     document.getElementById('balance_currency').value = '';
     document.getElementById('balance_type').value = 'add';
     
-    new (getBootstrap()).Modal(document.getElementById('balanceModal')).show();
+    new bootstrap.Modal(document.getElementById('balanceModal')).show();
 }
 
 // Show KYC modal
@@ -1150,7 +1138,7 @@ function showKycModal(userId, currentStatus) {
     document.getElementById('kyc_user_id').value = userId;
     document.getElementById('kyc_status').value = currentStatus;
     toggleRejectionReason(currentStatus);
-    new (getBootstrap()).Modal(document.getElementById('kycModal')).show();
+    new bootstrap.Modal(document.getElementById('kycModal')).show();
 }
 
 // Show ROI Analysis modal
@@ -1165,7 +1153,7 @@ function showRoiAnalysis(userId, userName) {
         </div>
     `;
     
-    new (getBootstrap()).Modal(document.getElementById('roiAnalysisModal')).show();
+    new bootstrap.Modal(document.getElementById('roiAnalysisModal')).show();
     
     fetch(`{{ url('admin/users') }}/${userId}/roi-analysis`)
         .then(response => response.json())
@@ -1312,7 +1300,7 @@ document.getElementById('balanceForm').addEventListener('submit', function(e) {
     })
     .then(response => response.json())
     .then(data => {
-        getBootstrap().Modal.getInstance(document.getElementById('balanceModal')).hide();
+        bootstrap.Modal.getInstance(document.getElementById('balanceModal')).hide();
         if (data.success) {
             const message = data.data 
                 ? `Balance adjusted successfully! ${data.data.formatted_new_balance || ''}`
@@ -1349,7 +1337,7 @@ document.getElementById('kycForm').addEventListener('submit', function(e) {
     })
     .then(response => response.json())
     .then(data => {
-        getBootstrap().Modal.getInstance(document.getElementById('kycModal')).hide();
+        bootstrap.Modal.getInstance(document.getElementById('kycModal')).hide();
         showAlert(data.message, data.success ? 'success' : 'danger');
         if (data.success) {
             setTimeout(() => location.reload(), 1500);
