@@ -357,7 +357,7 @@ class AdminCommissionSimulatorController extends Controller
                 ) : 0,
                 'qualifies_for_tier' => $userTier ? $this->checkTierQualification($user, $userTier) : null
             ],
-            'note' => 'This user is the sponsor receiving commission when their downline invests. Direct sponsor commission (8%) is paid immediately. Tier-based commission was used in the old system.'
+            'note' => 'This user is the sponsor receiving commission when their downline invests. Commission is based on their tier level which is determined by their active investment and referral counts.'
         ];
     }
 
@@ -407,10 +407,28 @@ class AdminCommissionSimulatorController extends Controller
 
     private function getCommissionTierForUser(User $user): ?CommissionSetting
     {
-        $userLevel = $user->profile ? $user->profile->level : 0;
+        $directReferrals = User::where('sponsor_id', $user->id)->count();
+        $indirectReferrals = $this->getIndirectReferralCount($user);
+        $activeInvestment = UserInvestment::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->sum('amount');
+
+        $tiers = CommissionSetting::where('is_active', true)
+            ->orderBy('level', 'desc')
+            ->get();
+
+        foreach ($tiers as $tier) {
+            $meetsInvestment = $activeInvestment >= ($tier->min_investment ?? 0);
+            $meetsDirectReferrals = $directReferrals >= ($tier->min_direct_referrals ?? 0);
+            $meetsIndirectReferrals = $indirectReferrals >= ($tier->min_indirect_referrals ?? 0);
+
+            if ($meetsInvestment && $meetsDirectReferrals && $meetsIndirectReferrals) {
+                return $tier;
+            }
+        }
 
         return CommissionSetting::where('is_active', true)
-            ->where('level', $userLevel)
+            ->orderBy('level', 'asc')
             ->first();
     }
 
