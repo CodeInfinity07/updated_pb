@@ -395,17 +395,10 @@
                                     Filter by Level
                                 </label>
                                 <select id="levelSelector" class="form-select">
-                                    <option value="">All Levels (L1-L10)</option>
+                                    <option value="">All Levels (L1-L3)</option>
                                     <option value="1">Level 1 (L1) - Direct</option>
                                     <option value="2">L1-L2</option>
                                     <option value="3">L1-L3</option>
-                                    <option value="4">L1-L4</option>
-                                    <option value="5">L1-L5</option>
-                                    <option value="6">L1-L6</option>
-                                    <option value="7">L1-L7</option>
-                                    <option value="8">L1-L8</option>
-                                    <option value="9">L1-L9</option>
-                                    <option value="10">L1-L10</option>
                                 </select>
                             </div>
                             
@@ -1678,8 +1671,8 @@
                     byLevel: {}
                 };
 
-                // Initialize stats for all 10 levels
-                for (let i = 1; i <= 10; i++) {
+                // Initialize stats for 3 levels
+                for (let i = 1; i <= 3; i++) {
                     stats.byLevel[i] = { total: 0, active: 0 };
                 }
 
@@ -1687,7 +1680,7 @@
                 Object.values(this.originalTreeData).forEach(user => {
                     if (user && !user.isRoot) {
                         const level = parseInt(user.tier);
-                        if (level >= 1 && level <= 10) {
+                        if (level >= 1 && level <= 3) {
                             stats.byLevel[level].total++;
                             stats.totals.total++;
                             if (user.status === 'active') {

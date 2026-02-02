@@ -113,12 +113,12 @@
 
                     <div class="alert alert-info mb-4">
                         <iconify-icon icon="solar:info-circle-bold-duotone" class="me-2"></iconify-icon>
-                        <strong>Profit Sharing Levels:</strong> When a user earns daily ROI, their upline chain (up to 10 levels) receives profit share based on these percentages.
-                        <br><small>Level 1 = Direct referral, Level 2 = Referral's referral, and so on.</small>
+                        <strong>Profit Sharing Levels:</strong> When a user earns daily ROI, their upline chain (up to 3 levels) receives profit share based on these percentages.
+                        <br><small>Level 1 = Direct referral, Level 2 = Referral's referral, Level 3 = 3rd level.</small>
                     </div>
 
                     <div class="row g-4">
-                        @for($i = 1; $i <= 10; $i++)
+                        @for($i = 1; $i <= 3; $i++)
                         @php
                             $level = $levels->firstWhere('level', $i);
                             $percentage = $level ? $level->percentage : 0;

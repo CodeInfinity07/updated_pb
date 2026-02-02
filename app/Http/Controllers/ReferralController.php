@@ -302,7 +302,7 @@ class ReferralController extends Controller
             ->where('status', 'completed')
             ->sum('amount');
 
-        // Get total team investment across all 10 levels
+        // Get total team investment across 3 levels
         $totalTeamInvestment = $this->calculateTotalTeamInvestment($user);
 
         return [
@@ -314,14 +314,14 @@ class ReferralController extends Controller
     }
 
     /**
-     * Calculate total team investment across all 10 levels
+     * Calculate total team investment across 3 levels
      */
     private function calculateTotalTeamInvestment($user)
     {
         $totalInvestment = 0;
         $currentLevelUsers = collect([$user]);
 
-        for ($level = 1; $level <= 10; $level++) {
+        for ($level = 1; $level <= 3; $level++) {
             $nextLevelUsers = collect();
             
             foreach ($currentLevelUsers as $currentUser) {
@@ -342,14 +342,14 @@ class ReferralController extends Controller
     }
 
     /**
-     * Get referral levels with statistics for all 10 levels
+     * Get referral levels with statistics for 3 levels
      */
     private function getReferralLevels($user)
     {
         $levels = [];
         $currentLevelUsers = collect([$user]);
 
-        for ($level = 1; $level <= 10; $level++) {
+        for ($level = 1; $level <= 3; $level++) {
             $nextLevelUsers = collect();
             
             foreach ($currentLevelUsers as $currentUser) {

@@ -14,7 +14,7 @@ use Exception;
 class CommissionDistributionService
 {
     /**
-     * Distribute ROI-based commissions to upline chain (up to 10 levels)
+     * Distribute ROI-based commissions to upline chain (up to 3 levels)
      * Called when a user earns daily ROI from their investment
      */
     public function distributeRoiCommissions(User $earner, float $roiAmount, string $description = ''): array
@@ -24,7 +24,7 @@ class CommissionDistributionService
             
             DB::beginTransaction();
 
-            $sponsorChain = $this->getSponsorChain($earner, 10);
+            $sponsorChain = $this->getSponsorChain($earner, 3);
             
             if (empty($sponsorChain)) {
                 Log::info('No upline found for ROI commission distribution', [
@@ -167,7 +167,7 @@ class CommissionDistributionService
     /**
      * Get sponsor chain up to specified levels
      */
-    private function getSponsorChain(User $user, int $levels = 10): array
+    private function getSponsorChain(User $user, int $levels = 3): array
     {
         $chain = [];
         $currentUser = $user;
