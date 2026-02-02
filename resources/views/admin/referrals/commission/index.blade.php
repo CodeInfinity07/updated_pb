@@ -537,10 +537,10 @@ document.getElementById('tierForm').addEventListener('submit', async function(e)
         // Build URL and method
         let url, method;
         if (isEditMode && currentTierId) {
-            url = '/admin/commission/' + currentTierId;
+            url = '/admin/referrals/commission/tiers/' + currentTierId;
             method = 'PUT';
         } else {
-            url = '/admin/commission';
+            url = '/admin/referrals/commission/tiers';
             method = 'POST';
         }
         
@@ -617,13 +617,15 @@ document.getElementById('tierForm').addEventListener('submit', async function(e)
 function toggleTierStatus(tierId, checkbox) {
     const originalChecked = checkbox.checked;
     
-    fetch('/admin/commission/' + tierId + '/toggle-status', {
+    fetch('/admin/referrals/commission/tiers/' + tierId, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        }
+            'Accept': 'application/json',
+            'X-HTTP-Method-Override': 'PUT'
+        },
+        body: JSON.stringify({ is_active: checkbox.checked })
     })
     .then(response => response.json())
     .then(data => {
@@ -655,7 +657,7 @@ function toggleTierStatus(tierId, checkbox) {
 // Delete tier
 function deleteTier(tierId, tierName) {
     if (confirm(`Are you sure you want to delete the "${tierName}" tier? This action cannot be undone.`)) {
-        fetch('/admin/commission/' + tierId, {
+        fetch('/admin/referrals/commission/tiers/' + tierId, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -684,7 +686,7 @@ function updateUserTiers() {
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
         
-        fetch("{{ route('admin.commission.update-user-tiers') }}", {
+        fetch("{{ route('admin.referrals.commission.update-user-tiers') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -726,7 +728,27 @@ function calculateCommission() {
         return;
     }
     
-    fetch("{{ route('admin.commission.calculate-preview') }}", {
+    // Calculate commission locally
+    const tier = tierDataStore[tierId];
+    if (!tier) {
+        showAlert('Tier not found', 'danger');
+        return;
+    }
+    
+    const commissions = {
+        level_1: parseFloat(amount) * (tier.commission_level_1 / 100),
+        level_2: parseFloat(amount) * (tier.commission_level_2 / 100),
+        level_3: parseFloat(amount) * (tier.commission_level_3 / 100),
+    };
+    commissions.total = commissions.level_1 + commissions.level_2 + commissions.level_3;
+    commissions.remaining = parseFloat(amount) - commissions.total;
+    
+    displayCalculationResults({ amount: parseFloat(amount), commissions: commissions });
+    return;
+    
+    // Commented out server-side calculation
+    /*
+    fetch("/admin/referrals/commission/calculate-preview", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -794,7 +816,7 @@ function calculatePreview(tierId) {
 
 // Export settings
 function exportSettings() {
-    window.open("{{ route('admin.commission.export') }}", '_blank');
+    showAlert('Export feature coming soon', 'info');
 }
 
 // Seed default tiers
@@ -804,7 +826,7 @@ function seedDefaultTiers() {
         const originalText = btn.innerHTML;
         btn.innerHTML = '<iconify-icon icon="iconamoon:loading-duotone" class="me-2"></iconify-icon>Seeding...';
         
-        fetch("{{ route('admin.commission.seed-default') }}", {
+        fetch("{{ route('admin.referrals.commission.seed-defaults') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
