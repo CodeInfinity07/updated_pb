@@ -793,7 +793,8 @@ let isSubmittingImpersonation = false;
 // Impersonate user function
 function impersonateUser(userId, userName, userEmail) {
     if (typeof bootstrap === 'undefined') {
-        console.error('Bootstrap not loaded yet');
+        // Retry after Bootstrap loads
+        setTimeout(() => impersonateUser(userId, userName, userEmail), 100);
         return;
     }
     currentImpersonationUserId = userId;
