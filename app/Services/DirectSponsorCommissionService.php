@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Models\Transaction;
 use App\Models\UserInvestment;
 use App\Models\CryptoWallet;
+use App\Models\CommissionSetting;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -62,11 +63,24 @@ class DirectSponsorCommissionService
                 return null;
             }
 
-            $commissionPercentage = Setting::getValue('direct_sponsor_commission', 8);
+            // Get sponsor's tier based on their qualifications
+            $sponsorTier = $this->getCommissionTierForUser($sponsor);
+            
+            // Use tier-based commission_level_1 for direct sponsor
+            $commissionPercentage = $sponsorTier ? (float) $sponsorTier->commission_level_1 : 0;
+            $tierName = $sponsorTier ? $sponsorTier->name : 'No Tier';
+
+            Log::info('Tier-based commission lookup', [
+                'sponsor_id' => $sponsor->id,
+                'tier_name' => $tierName,
+                'tier_level' => $sponsorTier ? $sponsorTier->level : null,
+                'commission_percentage' => $commissionPercentage
+            ]);
 
             if ($commissionPercentage <= 0) {
-                Log::info('Direct sponsor commission is disabled (0%)', [
-                    'investment_id' => $investment->id
+                Log::info('No commission for this tier', [
+                    'investment_id' => $investment->id,
+                    'tier_name' => $tierName
                 ]);
                 return null;
             }
@@ -174,5 +188,59 @@ class DirectSponsorCommissionService
     public static function getCommissionPercentage(): float
     {
         return (float) Setting::getValue('direct_sponsor_commission', 8);
+    }
+
+    /**
+     * Get the commission tier for a user based on their qualifications
+     */
+    private function getCommissionTierForUser(User $user): ?CommissionSetting
+    {
+        $directReferrals = User::where('sponsor_id', $user->id)->count();
+        $indirectReferrals = $this->getIndirectReferralCount($user);
+        $activeInvestment = UserInvestment::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->sum('amount');
+
+        // Get all active tiers, ordered by level descending (highest first)
+        $tiers = CommissionSetting::where('is_active', true)
+            ->orderBy('level', 'desc')
+            ->get();
+
+        // Find the highest tier the user qualifies for
+        foreach ($tiers as $tier) {
+            $meetsInvestment = $activeInvestment >= ($tier->min_investment ?? 0);
+            $meetsDirectReferrals = $directReferrals >= ($tier->min_direct_referrals ?? 0);
+            $meetsIndirectReferrals = $indirectReferrals >= ($tier->min_indirect_referrals ?? 0);
+
+            if ($meetsInvestment && $meetsDirectReferrals && $meetsIndirectReferrals) {
+                return $tier;
+            }
+        }
+
+        // Fall back to lowest tier if user doesn't qualify for any
+        return CommissionSetting::where('is_active', true)
+            ->orderBy('level', 'asc')
+            ->first();
+    }
+
+    /**
+     * Get count of indirect referrals (Level 2+)
+     */
+    private function getIndirectReferralCount(User $user, int $maxDepth = 10): int
+    {
+        $count = 0;
+        $currentLevelIds = [$user->id];
+        $depth = 0;
+
+        while ($depth < $maxDepth && !empty($currentLevelIds)) {
+            $nextLevelIds = User::whereIn('sponsor_id', $currentLevelIds)->pluck('id')->toArray();
+            if ($depth > 0) { // Skip direct referrals (depth 0)
+                $count += count($nextLevelIds);
+            }
+            $currentLevelIds = $nextLevelIds;
+            $depth++;
+        }
+
+        return $count;
     }
 }

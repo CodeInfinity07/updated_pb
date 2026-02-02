@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\UserInvestment;
+use App\Models\InvestmentPlanTier;
 use App\Models\ReferralCommissionLevel;
 use App\Models\CryptoWallet;
 use App\Models\Transaction;
@@ -35,17 +37,59 @@ class CommissionDistributionService
                 return $distributedCommissions;
             }
 
-            $commissionLevels = ReferralCommissionLevel::where('is_active', true)
-                ->orderBy('level')
-                ->pluck('percentage', 'level')
-                ->toArray();
-
+            // Get earner's active investment and its tier for profit sharing percentages
+            $activeInvestment = UserInvestment::where('user_id', $earner->id)
+                ->where('status', 'active')
+                ->first();
+            
+            $commissionLevels = [];
+            
+            if ($activeInvestment) {
+                $tier = InvestmentPlanTier::where('investment_plan_id', $activeInvestment->investment_plan_id)
+                    ->where('tier_level', $activeInvestment->tier_level ?? 1)
+                    ->first();
+                
+                if ($tier) {
+                    // Look up profit sharing config from investment_plan_profit_sharing table
+                    $profitSharingConfig = DB::table('investment_plan_profit_sharing')
+                        ->where('investment_plan_tier_id', $tier->id)
+                        ->where('is_active', true)
+                        ->first();
+                    
+                    if ($profitSharingConfig) {
+                        $commissionLevels = [
+                            1 => (float) $profitSharingConfig->level_1_commission,
+                            2 => (float) $profitSharingConfig->level_2_commission,
+                            3 => (float) $profitSharingConfig->level_3_commission,
+                        ];
+                        
+                        Log::info('Using tier-based profit sharing config', [
+                            'tier_id' => $tier->id,
+                            'tier_name' => $tier->tier_name,
+                            'commission_levels' => $commissionLevels
+                        ]);
+                    }
+                }
+            }
+            
+            // If no tier-based config found, use default from ReferralCommissionLevel
             if (empty($commissionLevels)) {
-                ReferralCommissionLevel::seedDefaults();
                 $commissionLevels = ReferralCommissionLevel::where('is_active', true)
                     ->orderBy('level')
                     ->pluck('percentage', 'level')
                     ->toArray();
+
+                if (empty($commissionLevels)) {
+                    ReferralCommissionLevel::seedDefaults();
+                    $commissionLevels = ReferralCommissionLevel::where('is_active', true)
+                        ->orderBy('level')
+                        ->pluck('percentage', 'level')
+                        ->toArray();
+                }
+                
+                Log::info('Using fallback ReferralCommissionLevel config', [
+                    'commission_levels' => $commissionLevels
+                ]);
             }
 
             // Check if profit sharing shield is enabled
