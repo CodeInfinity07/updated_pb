@@ -53,7 +53,7 @@ class BotController extends Controller
     {
         $user = User::with('profile')->find(Auth::id());
 
-        if ($user->profile && $user->profile->uname) {
+        if (optional($user->profile)->uname) {
             return redirect()->route('bot.color-trading.game')
                 ->with('success', 'Game account is already linked!');
         }
