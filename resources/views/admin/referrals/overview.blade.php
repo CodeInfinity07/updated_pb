@@ -181,7 +181,7 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('script')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('userSearchInput');
@@ -282,4 +282,4 @@ function viewLevelUsers(level) {
         });
 }
 </script>
-@endpush
+@endsection

@@ -48,7 +48,6 @@
     @include('admin.partials.user-details-modal')
 
     @yield('script')
-    @stack('scripts')
 
 </body>
 

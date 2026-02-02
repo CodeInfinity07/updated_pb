@@ -481,7 +481,7 @@
 </style>
 @endpush
 
-@push('scripts')
+@section('script')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     function updateOnlineUsers() {
@@ -500,4 +500,4 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(updateOnlineUsers, 30000);
 });
 </script>
-@endpush
+@endsection

@@ -171,7 +171,7 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('script')
 <script>
 document.getElementById('runEvaluationBtn').addEventListener('click', function() {
     if (!confirm('Run salary evaluation for all due applications?')) return;
@@ -239,4 +239,4 @@ document.querySelectorAll('.approve-payment-btn').forEach(function(btn) {
     });
 });
 </script>
-@endpush
+@endsection
