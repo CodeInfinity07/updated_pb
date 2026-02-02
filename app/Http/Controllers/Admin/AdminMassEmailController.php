@@ -300,7 +300,7 @@ class AdminMassEmailController extends Controller
             // Send test email to admin
             $testRecipient = auth()->user()->email;
             
-            $fromAddress = config('mail.from.address') ?: env('MAIL_FROM_ADDRESS', 'support@onyxrock.org');
+            $fromAddress = config('mail.from.address') ?: env('MAIL_FROM_ADDRESS', 'noreply@predictionbot.net');
             $fromName = config('mail.from.name') ?: env('MAIL_FROM_NAME', 'OnyxRock');
             
             Mail::raw('This is a test email to verify your email configuration for mass email campaigns.', function ($message) use ($testRecipient, $fromAddress, $fromName) {

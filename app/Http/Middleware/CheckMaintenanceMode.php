@@ -73,7 +73,7 @@ class CheckMaintenanceMode
         // Return maintenance view
         return response()->view('maintenance', [
             'platform_name' => getSetting('app_name', config('app.name')),
-            'support_email' => getSetting('support_email', 'support@onyxrock.org'),
+            'support_email' => getSetting('support_email', 'noreply@predictionbot.net'),
             'message' => 'We are currently performing scheduled maintenance to improve your experience. Please check back soon.',
         ], 503);
     }

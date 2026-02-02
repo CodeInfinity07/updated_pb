@@ -49,10 +49,10 @@ REDIS_PORT=6379
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.hostinger.com
 MAIL_PORT=587
-MAIL_USERNAME=support@onyxrock.org
+MAIL_USERNAME=noreply@predictionbot.net
 MAIL_PASSWORD="v#E0PFjn"
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=support@onyxrock.org
+MAIL_FROM_ADDRESS=noreply@predictionbot.net
 MAIL_FROM_NAME="PredictionBot"
 
 AWS_ACCESS_KEY_ID=
@@ -83,7 +83,7 @@ GAME_API_TIMEOUT=10
 GAME_API_RETRY=3
 
 # Push Notification VAPID Keys
-VAPID_SUBJECT=mailto:support@onyxrock.org>
+VAPID_SUBJECT=mailto:noreply@predictionbot.net>
 VAPID_PUBLIC_KEY=BOFughS7cyuSpRBbXDNcYCBu5hFFM5_C-VmSbDew7hH80MA4ZPISnEUq2OC9fn_V8P1Dh298v19KPhJI_nRMhrc
 VAPID_PRIVATE_KEY=Vs-eRdmIW1bEHflVbK4auMlx3G7xkasxvcFDl-dpmWo
 

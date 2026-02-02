@@ -22,7 +22,7 @@ class DynamicMailConfigService
                 'encryption' => env('MAIL_ENCRYPTION', 'tls'),
                 'username' => env('MAIL_USERNAME'),
                 'password' => env('MAIL_PASSWORD'),
-                'from_address' => env('MAIL_FROM_ADDRESS', 'noreply@onyxrock.org'),
+                'from_address' => env('MAIL_FROM_ADDRESS', 'noreply@predictionbot.net'),
                 'from_name' => env('MAIL_FROM_NAME', 'OnyxRock'),
             ];
 

@@ -393,7 +393,7 @@ if (!function_exists('getPlatformInfo')) {
             'name' => getSetting('app_name', config('app.name')),
             'tagline' => getSetting('site_tagline', 'Advanced Trading Platform'),
             'description' => getSetting('site_description', ''),
-            'support_email' => getSetting('support_email', 'support@onyxrock.org'),
+            'support_email' => getSetting('support_email', 'noreply@predictionbot.net'),
             'currency' => getDefaultCurrency(),
             'maintenance_mode' => isMaintenanceMode(),
             'registration_enabled' => canRegister(),
