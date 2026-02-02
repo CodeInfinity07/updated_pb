@@ -113,28 +113,48 @@
 
 <div class="row">
     <div class="col-12">
-        <!-- Investment Header -->
+        <!-- Game Account Header -->
         <div class="card mb-4">
             <div class="card-body">
                 <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
                     <div>
                         <h4 class="card-title d-flex align-items-center mb-2">
-                            <iconify-icon icon="material-symbols:trending-up" class="me-2 text-primary"></iconify-icon>
-                            Investment Bot
+                            <iconify-icon icon="material-symbols:palette" class="me-2 text-primary"></iconify-icon>
+                            Color Trading Investment
                         </h4>
                         <p class="text-muted small mb-0">
-                            Grow your portfolio with smart investments
+                            Game Account: <span class="fw-medium text-success">{{ $user->profile->uname ?? 'Not Linked' }}</span>
+                            @if($user->profile && $user->profile->umoney)
+                            | Game Balance: <span class="fw-medium text-success">${{ number_format($user->profile->umoney, 2) }}</span>
+                            @endif
                         </p>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-success-subtle text-success d-inline-flex align-items-center">
                             <span class="badge-dot bg-success rounded-circle me-2" style="width: 8px; height: 8px;"></span>
-                            Active
+                            Connected
                         </span>
-                        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm">
-                            <iconify-icon icon="material-symbols:home" class="me-1"></iconify-icon>
-                            Dashboard
-                        </a>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <iconify-icon icon="material-symbols:more-vert" class="me-1"></iconify-icon>
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="refreshGameBalance()">
+                                    <iconify-icon icon="material-symbols:refresh" class="me-2"></iconify-icon>
+                                    Refresh Balance
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ route('bot.index') }}">
+                                    <iconify-icon icon="material-symbols:home" class="me-2"></iconify-icon>
+                                    Back to Games
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="unlinkAccount()">
+                                    <iconify-icon icon="material-symbols:link-off" class="me-2"></iconify-icon>
+                                    Unlink Account
+                                </a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -242,18 +262,6 @@
                     </div>
                     <div class="card-body">
                         @if($investmentData['can_invest'])
-                            @if($botActivationRequired ?? false)
-                                <div class="alert alert-info border-info mb-4">
-                                    <div class="d-flex align-items-start">
-                                        <iconify-icon icon="solar:shield-check-bold-duotone" class="me-2 fs-4 text-info"></iconify-icon>
-                                        <div>
-                                            <h6 class="alert-heading mb-1">First Investment</h6>
-                                            <p class="mb-0 small">Your first investment will activate your trading bot automatically.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
                             <div class="alert alert-info mb-4">
                                 <div class="d-flex align-items-center">
                                     <iconify-icon icon="material-symbols:info" class="me-2"></iconify-icon>
@@ -261,7 +269,12 @@
                                         <h6 class="mb-1">{{ $investmentData['plan']->name }}</h6>
                                         @if($investmentData['tier'])
                                             <small class="mb-1 d-block">
-                                                <strong>{{ $investmentData['tier_name'] }}</strong>
+                                                <strong>{{ $investmentData['tier_name'] }}</strong> - 
+                                                {{ $investmentData['interest_rate'] }}% {{ ucfirst($investmentData['plan']->interest_type) }}
+                                            </small>
+                                        @else
+                                            <small class="mb-1 d-block">
+                                                {{ $investmentData['interest_rate'] }}% {{ ucfirst($investmentData['plan']->interest_type) }}
                                             </small>
                                         @endif
                                         <small class="text-muted">
@@ -271,12 +284,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                            @php
-                                $effectiveMinimum = ($botActivationRequired ?? false) 
-                                    ? ($investmentData['first_investment_minimum'] ?? $investmentData['minimum_amount']) 
-                                    : $investmentData['minimum_amount'];
-                            @endphp
 
                             <form id="investmentForm">
                                 @csrf
@@ -290,14 +297,14 @@
                                             id="investAmount" 
                                             name="amount"
                                             placeholder="0.00"
-                                            min="{{ $effectiveMinimum }}" 
+                                            min="{{ $investmentData['minimum_amount'] }}" 
                                             max="{{ min($investmentData['maximum_amount'], $totalBalance) }}" 
                                             step="0.01"
                                             {{ !$hasBalance ? 'disabled' : '' }}
                                         >
                                     </div>
                                     <div class="form-text">
-                                        Min: ${{ number_format($effectiveMinimum, 2) }} | 
+                                        Min: ${{ number_format($investmentData['minimum_amount'], 2) }} | 
                                         Max: ${{ number_format(min($investmentData['maximum_amount'], $totalBalance), 2) }} |
                                         Available: ${{ number_format($totalBalance, 2) }}
                                     </div>
@@ -310,10 +317,16 @@
                                         id="investBtn"
                                         {{ !$hasBalance ? 'disabled' : '' }}
                                     >
-                                        <span id="investText">{{ ($botActivationRequired ?? false) ? 'Activate Bot & Invest' : 'Invest' }}</span>
+                                        <span id="investText">Invest</span>
                                     </button>
                                 </div>
 
+                                <div class="alert alert-success">
+                                    <iconify-icon icon="material-symbols:info" class="me-2"></iconify-icon>
+                                    <small>
+                                        Your investment will earn {{ $investmentData['interest_rate'] }}% returns {{ $investmentData['plan']->interest_type }}.
+                                    </small>
+                                </div>
                             </form>
                         @else
                             <div class="text-center py-4">
@@ -347,9 +360,7 @@
                                 <tr>
                                     <th scope="col">Plan</th>
                                     <th scope="col">Amount</th>
-                                    <th scope="col">Start Date</th>
                                     <th scope="col">Earned</th>
-                                    <th scope="col">Cap Progress</th>
                                     <th scope="col">Next Return</th>
                                     <th scope="col">24H Progress</th>
                                     <th scope="col">Status</th>
@@ -362,19 +373,12 @@
                                         $isOverdue = $nextReturnDate && now()->isAfter($nextReturnDate);
                                         $singleReturn = $investment->calculateSingleReturn();
                                         
-                                        // Calculate 24-hour progress - starts from investment creation or last payout
-                                        $progressStartTime = $investment->last_payout_date 
-                                            ? \Carbon\Carbon::parse($investment->last_payout_date) 
-                                            : $investment->created_at;
-                                        $hoursSinceLastReturn = $progressStartTime ? $progressStartTime->diffInHours(now()) : 0;
+                                        // Calculate 24-hour progress - FIXED LOGIC
+                                        $lastReturnDate = $investment->last_return_at ?? $investment->started_at;
+                                        $hoursSinceLastReturn = $lastReturnDate->diffInHours(now());
                                         $progress24h = min(100, ($hoursSinceLastReturn / 24) * 100);
+                                        // Ensure we never show negative progress
                                         $progress24h = max(0, $progress24h);
-                                        
-                                        // Calculate cap progress (earnings_accumulated / (amount * multiplier))
-                                        $multiplier = $investment->expiry_multiplier ?? 3;
-                                        $capAmount = floatval($investment->amount) * $multiplier;
-                                        $earningsAccumulated = floatval($investment->earnings_accumulated ?? 0);
-                                        $capProgress = $capAmount > 0 ? min(100, ($earningsAccumulated / $capAmount) * 100) : 0;
                                     @endphp
                                     
                                     <tr>
@@ -386,21 +390,7 @@
                                             <div class="fw-bold text-primary">{{ $investment->formatted_amount }}</div>
                                         </td>
                                         <td>
-                                            <div class="text-muted">{{ $investment->start_date ? \Carbon\Carbon::parse($investment->start_date)->format('M d, Y') : 'N/A' }}</div>
-                                        </td>
-                                        <td>
                                             <div class="fw-bold text-success">{{ $investment->formatted_paid_return }}</div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="badge {{ $multiplier == 6 ? 'bg-warning text-dark' : 'bg-secondary' }}">{{ $multiplier }}x</span>
-                                                <div style="width: 80px;">
-                                                    <div class="progress" style="height: 8px;">
-                                                        <div class="progress-bar {{ $capProgress >= 80 ? 'bg-warning' : 'bg-success' }}" style="width: {{ $capProgress }}%"></div>
-                                                    </div>
-                                                    <small class="text-muted">{{ number_format($capProgress, 1) }}%</small>
-                                                </div>
-                                            </div>
                                         </td>
                                         <td>
                                             @if($investment->investmentPlan->interest_type === 'daily' && $nextReturnDate)
@@ -414,6 +404,9 @@
                                                             <span class="countdown-hours">00</span>:
                                                             <span class="countdown-minutes">00</span>:
                                                             <span class="countdown-seconds">00</span>
+                                                        </div>
+                                                        <div class="return-amount text-success small">
+                                                            +${{ number_format($singleReturn, 2) }}
                                                         </div>
                                                     </div>
                                                 @endif
@@ -445,19 +438,12 @@
                             $isOverdue = $nextReturnDate && now()->isAfter($nextReturnDate);
                             $singleReturn = $investment->calculateSingleReturn();
                             
-                            // Calculate 24-hour progress - starts from investment creation or last payout
-                            $progressStartTime = $investment->last_payout_date 
-                                ? \Carbon\Carbon::parse($investment->last_payout_date) 
-                                : $investment->created_at;
-                            $hoursSinceLastReturn = $progressStartTime ? $progressStartTime->diffInHours(now()) : 0;
+                            // Calculate 24-hour progress - FIXED LOGIC
+                            $lastReturnDate = $investment->last_return_at ?? $investment->started_at;
+                            $hoursSinceLastReturn = $lastReturnDate->diffInHours(now());
                             $progress24h = min(100, ($hoursSinceLastReturn / 24) * 100);
+                            // Ensure we never show negative progress
                             $progress24h = max(0, $progress24h);
-                            
-                            // Calculate cap progress (earnings_accumulated / (amount * multiplier))
-                            $multiplier = $investment->expiry_multiplier ?? 3;
-                            $capAmount = floatval($investment->amount) * $multiplier;
-                            $earningsAccumulated = floatval($investment->earnings_accumulated ?? 0);
-                            $capProgress = $capAmount > 0 ? min(100, ($earningsAccumulated / $capAmount) * 100) : 0;
                         @endphp
                         
                         <div class="investment-card border mb-3">
@@ -468,10 +454,7 @@
                                         <h6 class="mb-1 fw-bold">{{ $investment->investmentPlan->name }}</h6>
                                         <small class="text-muted">{{ ucfirst($investment->investmentPlan->interest_type) }} Returns</small>
                                     </div>
-                                    <div class="d-flex gap-1">
-                                        <span class="badge {{ $multiplier == 6 ? 'bg-warning text-dark' : 'bg-secondary' }}">{{ $multiplier }}x</span>
-                                        <span class="badge bg-success">Active</span>
-                                    </div>
+                                    <span class="badge bg-success">Active</span>
                                 </div>
 
                                 {{-- Stats Grid --}}
@@ -484,27 +467,6 @@
                                         <div class="fw-bold text-success">{{ $investment->formatted_paid_return }}</div>
                                         <small class="text-muted">Earned</small>
                                     </div>
-                                </div>
-                                
-                                {{-- Cap Progress --}}
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <small class="text-muted">Cap Progress ({{ $multiplier }}x)</small>
-                                        <small class="fw-medium">{{ number_format($capProgress, 1) }}%</small>
-                                    </div>
-                                    <div class="progress" style="height: 8px;">
-                                        <div class="progress-bar {{ $capProgress >= 80 ? 'bg-warning' : 'bg-success' }}" style="width: {{ $capProgress }}%"></div>
-                                    </div>
-                                    <div class="d-flex justify-content-between mt-1">
-                                        <small class="text-muted">${{ number_format($earningsAccumulated, 2) }}</small>
-                                        <small class="text-muted">${{ number_format($capAmount, 2) }}</small>
-                                    </div>
-                                </div>
-                                
-                                {{-- Start Date --}}
-                                <div class="d-flex justify-content-between align-items-center mb-3 small">
-                                    <span class="text-muted">Start Date:</span>
-                                    <span class="fw-medium">{{ $investment->start_date ? \Carbon\Carbon::parse($investment->start_date)->format('M d, Y') : 'N/A' }}</span>
                                 </div>
 
                                 {{-- 24-Hour Timer Section --}}
@@ -542,6 +504,9 @@
                                                         <div class="countdown-value countdown-seconds">00</div>
                                                         <div class="countdown-label">Seconds</div>
                                                     </div>
+                                                </div>
+                                                <div class="return-amount text-success">
+                                                    Next Return: ${{ number_format($singleReturn, 2) }}
                                                 </div>
                                             </div>
                                         @endif
@@ -750,6 +715,57 @@ function setLoadingState(loading) {
             if (amountInput) amountInput.disabled = false;
         }
     }
+}
+
+async function refreshGameBalance() {
+    try {
+        const response = await fetch('{{ route("bot.api.refresh-balance") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showAlert(`Game balance refreshed: $${result.data.balance}`, 'success');
+        } else {
+            showAlert(result.message || 'Failed to refresh balance', 'error');
+        }
+    } catch (error) {
+        console.error('Refresh error:', error);
+        showAlert('Failed to refresh balance', 'error');
+    }
+}
+
+function unlinkAccount() {
+    if (!confirm('Are you sure you want to unlink your game account?')) return;
+
+    fetch('{{ route("bot.color-trading.unlink") }}', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showAlert('Account unlinked successfully!', 'success');
+            setTimeout(() => {
+                window.location.href = '{{ route("bot.color-trading") }}';
+            }, 2000);
+        } else {
+            showAlert(result.message || 'Failed to unlink account', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Unlink error:', error);
+        showAlert('Network error occurred', 'error');
+    });
 }
 
 function showAlert(message, type) {
