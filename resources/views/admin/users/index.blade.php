@@ -777,17 +777,23 @@
 
 @section('script')
 <script>
+// Wait for Bootstrap to be available
+function waitForBootstrap(callback) {
+    if (typeof bootstrap !== 'undefined') {
+        callback();
+    } else {
+        setTimeout(() => waitForBootstrap(callback), 50);
+    }
+}
+
 // Global variables for impersonation
 let currentImpersonationUserId = null;
 let isSubmittingImpersonation = false;
 
 // Impersonate user function
 function impersonateUser(userId, userName, userEmail) {
-    // Wait for bootstrap with polling
-    if (typeof window.bootstrap === 'undefined') {
-        setTimeout(function() {
-            impersonateUser(userId, userName, userEmail);
-        }, 100);
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap not loaded yet');
         return;
     }
     currentImpersonationUserId = userId;
@@ -875,18 +881,13 @@ function confirmImpersonation() {
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltips when Bootstrap is ready
-    function initTooltips() {
-        if (typeof window.bootstrap !== 'undefined') {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new window.bootstrap.Tooltip(tooltipTriggerEl);
-            });
-        } else {
-            setTimeout(initTooltips, 100);
-        }
-    }
-    initTooltips();
+    // Wait for Bootstrap then initialize tooltips
+    waitForBootstrap(function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
     
     // Impersonation confirmation checkbox handler
     const confirmCheckbox = document.getElementById('impersonationConfirm');
