@@ -591,21 +591,7 @@ class BotController extends Controller
     {
         // Check if this is first investment (bot activation)
         $isFirstInvestment = !$user->bot_activated_at;
-        $botFee = 0;
         $investmentAmount = $amount;
-        
-        // Deduct bot fee from investment amount on first investment
-        if ($isFirstInvestment) {
-            $botFee = InvestmentExpirySetting::getBotFeeAmount();
-            $investmentAmount = $amount - $botFee;
-            
-            Log::info('Bot activation fee deducted', [
-                'user_id' => $user->id,
-                'total_amount' => $amount,
-                'bot_fee' => $botFee,
-                'investment_amount' => $investmentAmount
-            ]);
-        }
         
         // Deduct full amount from user's crypto wallets (includes bot fee on first investment)
         if (!$user->deductFromWallets($amount)) {
@@ -658,8 +644,7 @@ class BotController extends Controller
             $user->activateBot();
             Log::info('Bot activated for user', [
                 'user_id' => $user->id,
-                'first_investment_id' => $userInvestment->id,
-                'bot_fee_charged' => $botFee
+                'first_investment_id' => $userInvestment->id
             ]);
         }
 
@@ -684,29 +669,6 @@ class BotController extends Controller
             ])
         ]);
         
-        // Create separate bot fee transaction record on first investment
-        if ($isFirstInvestment && $botFee > 0) {
-            Transaction::create([
-                'user_id' => $user->id,
-                'transaction_id' => 'BOTFEE_' . time() . '_' . $user->id,
-                'type' => Transaction::TYPE_BOT_FEE,
-                'amount' => $botFee,
-                'currency' => 'USD',
-                'status' => 'completed',
-                'description' => 'Bot activation fee',
-                'metadata' => json_encode([
-                    'first_investment_id' => $userInvestment->id,
-                    'plan_name' => $plan->name
-                ])
-            ]);
-            
-            Log::info('Bot fee transaction created', [
-                'user_id' => $user->id,
-                'bot_fee' => $botFee,
-                'investment_id' => $userInvestment->id
-            ]);
-        }
-
         Log::info('New investment created successfully', [
             'user_id' => $user->id,
             'investment_id' => $userInvestment->id,
@@ -718,20 +680,14 @@ class BotController extends Controller
 
         $this->directSponsorCommissionService->distributeCommission($userInvestment);
 
-        // Build success message
-        $successMessage = $isFirstInvestment 
-            ? "Successfully invested $" . number_format($investmentAmount, 2) . " in {$plan->name}! (Bot activation fee: $" . number_format($botFee, 2) . ")"
-            : "Successfully invested $" . number_format($investmentAmount, 2) . " in {$plan->name}!";
-
         return [
             'success' => true,
-            'message' => $successMessage,
+            'message' => "Successfully invested $" . number_format($investmentAmount, 2) . " in {$plan->name}!",
             'data' => [
                 'investment_id' => $userInvestment->id,
                 'action_type' => 'created',
                 'amount_added' => $investmentAmount,
                 'total_investment_amount' => $investmentAmount,
-                'bot_fee' => $isFirstInvestment ? $botFee : 0,
                 'total_deducted' => $amount,
                 'plan_name' => $plan->name,
                 'tier_name' => $tier ? $tier->tier_name : null,
@@ -992,20 +948,14 @@ class BotController extends Controller
                 $investment->update(['expiry_multiplier' => $targetMultiplier]);
             }
 
-            // Handle bot fee on first package (one-time $10 fee)
-            $botFeeCharged = 0;
+            // Activate bot on first package if not already activated
             if (!$user->isBotActivated() && !$investment->bot_fee_applied) {
-                $botFeeAmount = InvestmentExpirySetting::getBotFeeAmount();
-                
                 $investment->update(['bot_fee_applied' => true]);
                 $user->activateBot();
                 
-                $botFeeCharged = $botFeeAmount;
-                
-                Log::info('Bot activation fee applied', [
+                Log::info('Bot activated on first package', [
                     'user_id' => $user->id,
-                    'investment_id' => $investment->id,
-                    'fee_amount' => $botFeeAmount
+                    'investment_id' => $investment->id
                 ]);
             }
 
@@ -1104,7 +1054,6 @@ class BotController extends Controller
             return [
                 'success' => true,
                 'amount' => $returnAmount,
-                'bot_fee_charged' => $botFeeCharged,
                 'earnings_accumulated' => $investment->earnings_accumulated,
                 'expiry_cap' => $investment->getExpiryCap(),
                 'user_total_earned' => $user->total_earned,
