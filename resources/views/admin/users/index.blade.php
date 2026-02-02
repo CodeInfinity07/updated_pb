@@ -777,27 +777,17 @@
 
 @section('script')
 <script>
-// Bootstrap ready state
-let bootstrapReady = typeof bootstrap !== 'undefined';
-let pendingActions = [];
-
-// Listen for Bootstrap ready event
-document.addEventListener('bootstrap:ready', function() {
-    bootstrapReady = true;
-    // Execute any pending actions
-    pendingActions.forEach(fn => fn());
-    pendingActions = [];
-});
-
 // Global variables for impersonation
 let currentImpersonationUserId = null;
 let isSubmittingImpersonation = false;
 
 // Impersonate user function
 function impersonateUser(userId, userName, userEmail) {
-    if (!bootstrapReady) {
-        // Queue the action for when Bootstrap is ready
-        pendingActions.push(() => impersonateUser(userId, userName, userEmail));
+    // Wait for bootstrap with polling
+    if (typeof window.bootstrap === 'undefined') {
+        setTimeout(function() {
+            impersonateUser(userId, userName, userEmail);
+        }, 100);
         return;
     }
     currentImpersonationUserId = userId;
@@ -887,19 +877,16 @@ function confirmImpersonation() {
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips when Bootstrap is ready
     function initTooltips() {
-        if (typeof bootstrap !== 'undefined') {
+        if (typeof window.bootstrap !== 'undefined') {
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
+                return new window.bootstrap.Tooltip(tooltipTriggerEl);
             });
+        } else {
+            setTimeout(initTooltips, 100);
         }
     }
-    
-    if (bootstrapReady) {
-        initTooltips();
-    } else {
-        document.addEventListener('bootstrap:ready', initTooltips);
-    }
+    initTooltips();
     
     // Impersonation confirmation checkbox handler
     const confirmCheckbox = document.getElementById('impersonationConfirm');
