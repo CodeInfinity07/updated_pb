@@ -15,7 +15,7 @@ class AdminCommissionSimulatorController extends Controller
 {
     public function index()
     {
-        $users = User::with(['profile', 'packages' => function($q) {
+        $users = User::with(['profile', 'investments' => function($q) {
             $q->where('status', 'active');
         }])
         ->where('status', 'active')
@@ -29,7 +29,7 @@ class AdminCommissionSimulatorController extends Controller
                 'email' => $user->email,
                 'level' => $user->profile->level ?? 0,
                 'total_invested' => $user->total_invested ?? 0,
-                'active_investments' => $user->packages->count()
+                'active_investments' => $user->investments->count()
             ];
         });
 
@@ -43,7 +43,7 @@ class AdminCommissionSimulatorController extends Controller
             'downline_investment_amount' => 'nullable|numeric|min:0'
         ]);
 
-        $user = User::with(['profile', 'packages' => function($q) {
+        $user = User::with(['profile', 'investments' => function($q) {
             $q->where('status', 'active')->with('investmentPlan');
         }])->find($request->user_id);
 
@@ -75,14 +75,14 @@ class AdminCommissionSimulatorController extends Controller
             'total_earned' => $user->total_earned ?? 0,
             'sponsor_id' => $user->sponsor_id,
             'sponsor_username' => $user->sponsor ? $user->sponsor->username : null,
-            'active_investments_count' => $user->packages->count(),
-            'active_investments_value' => $user->packages->sum('amount')
+            'active_investments_count' => $user->investments->count(),
+            'active_investments_value' => $user->investments->sum('amount')
         ];
     }
 
     private function calculateTomorrowRoi(User $user): array
     {
-        $activeInvestments = $user->packages;
+        $activeInvestments = $user->investments;
         $roiDetails = [];
         $totalRoi = 0;
 
@@ -220,7 +220,7 @@ class AdminCommissionSimulatorController extends Controller
     private function checkProfitSharingShieldRequirement(User $user, int $level, float $minInvestment): array
     {
         $directReferrals = User::where('sponsor_id', $user->id)
-            ->withSum(['packages as total_investment' => function($query) {
+            ->withSum(['investments as total_investment' => function($query) {
                 $query->where('status', 'active');
             }], 'amount')
             ->orderByDesc('total_investment')
