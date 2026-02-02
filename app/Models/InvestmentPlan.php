@@ -48,31 +48,19 @@ class InvestmentPlan extends Model
         ];
     }
 
-    public function isVariableRoi(): bool
-    {
-        return $this->roi_type === 'variable';
-    }
-
-    public function isFixedRoi(): bool
-    {
-        return $this->roi_type === 'fixed' || $this->roi_type === null;
-    }
-
+    /**
+     * Get the daily ROI rate (simple fixed rate).
+     */
     public function getDailyRoi(): float
     {
-        if ($this->isVariableRoi() && $this->min_interest_rate !== null && $this->max_interest_rate !== null) {
-            $min = (float) $this->min_interest_rate;
-            $max = (float) $this->max_interest_rate;
-            return $min + (mt_rand() / mt_getrandmax()) * ($max - $min);
-        }
         return (float) $this->interest_rate;
     }
 
+    /**
+     * Get formatted ROI display.
+     */
     public function getFormattedRoiRangeAttribute(): string
     {
-        if ($this->isVariableRoi()) {
-            return number_format($this->min_interest_rate, 2) . '% - ' . number_format($this->max_interest_rate, 2) . '%';
-        }
         return number_format($this->interest_rate, 2) . '%';
     }
 

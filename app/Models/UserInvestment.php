@@ -31,8 +31,6 @@ class UserInvestment extends Model
         'last_payout_date',
         'earnings_accumulated',
         'commission_earned',
-        'expiry_multiplier',
-        'bot_fee_applied',
         'status_reason',
     ];
 
@@ -46,8 +44,6 @@ class UserInvestment extends Model
             'paid_return' => 'decimal:2',
             'earnings_accumulated' => 'decimal:2',
             'commission_earned' => 'decimal:2',
-            'expiry_multiplier' => 'integer',
-            'bot_fee_applied' => 'boolean',
             'start_date' => 'date',
             'end_date' => 'date',
             'last_payout_date' => 'date',
@@ -371,7 +367,7 @@ class UserInvestment extends Model
 
     /**
      * Calculate single return amount.
-     * Supports both fixed ROI (static rate) and variable ROI (random rate within range).
+     * Simple fixed ROI calculation: amount × (interest_rate / 100)
      */
     public function calculateSingleReturn(): float
     {
@@ -388,35 +384,8 @@ class UserInvestment extends Model
         $plan = $this->investmentPlan;
         $investmentAmount = floatval($this->amount ?? 0);
 
-        // Determine interest rate based on ROI type
-        if ($plan->roi_type === 'variable' && $plan->min_interest_rate !== null && $plan->max_interest_rate !== null) {
-            // Variable ROI: generate random rate between min and max
-            // Use date + plan ID as seed so all users get the same rate for the same day
-            $minRate = floatval($plan->min_interest_rate);
-            $maxRate = floatval($plan->max_interest_rate);
-            
-            // Guard: ensure valid range (min < max)
-            if ($minRate >= $maxRate) {
-                // Fallback to min rate if range is invalid
-                $interestRate = $minRate;
-            } else {
-                // Create deterministic seed from today's date and plan ID
-                // This ensures all users with the same plan get the same rate each day
-                $dateSeed = (int) date('Ymd');
-                $seed = $dateSeed * 1000 + $plan->id;
-                mt_srand($seed);
-                
-                // Generate random rate with 2 decimal precision
-                $interestRate = $minRate + (mt_rand() / mt_getrandmax()) * ($maxRate - $minRate);
-                $interestRate = round($interestRate, 2);
-                
-                // Reset to truly random for other operations
-                mt_srand();
-            }
-        } else {
-            // Fixed ROI: use the static interest_rate
-            $interestRate = floatval($plan->interest_rate ?? 0);
-        }
+        // Simple fixed ROI: use the interest_rate from plan
+        $interestRate = floatval($plan->interest_rate ?? 0);
 
         // Calculate return: amount × (rate / 100)
         $rate = $interestRate / 100;
@@ -520,58 +489,6 @@ class UserInvestment extends Model
         }
 
         return true;
-    }
-
-    /**
-     * Get the expiry cap amount (principal × multiplier)
-     */
-    public function getExpiryCap(): float
-    {
-        $multiplier = $this->expiry_multiplier ?? 3;
-        return floatval($this->amount) * $multiplier;
-    }
-
-    /**
-     * Check if this package has reached its expiry cap
-     */
-    public function hasReachedExpiryCap(): bool
-    {
-        $cap = $this->getExpiryCap();
-        $earnings = floatval($this->earnings_accumulated ?? 0);
-        return $earnings >= $cap;
-    }
-
-    /**
-     * Get remaining earnings until expiry cap
-     */
-    public function getRemainingUntilCap(): float
-    {
-        $cap = $this->getExpiryCap();
-        $earnings = floatval($this->earnings_accumulated ?? 0);
-        return max(0, $cap - $earnings);
-    }
-
-    /**
-     * Get earnings progress percentage
-     */
-    public function getEarningsProgressPercentage(): float
-    {
-        $cap = $this->getExpiryCap();
-        if ($cap <= 0) return 0;
-        $earnings = floatval($this->earnings_accumulated ?? 0);
-        return min(100, ($earnings / $cap) * 100);
-    }
-
-    /**
-     * Expire this package due to reaching cap
-     */
-    public function expireDueToCap(): bool
-    {
-        return $this->update([
-            'status' => 'completed',
-            'completed_at' => now(),
-            'status_reason' => 'Reached ' . $this->expiry_multiplier . 'x earnings cap'
-        ]);
     }
 
     /*
