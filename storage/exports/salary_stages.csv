@@ -1,0 +1,7 @@
+Stage Name,Stage Order,Direct Members Required,Self Deposit Required ($),Team Required,Salary Amount ($),Team 35% Growth Base,Team 35% Growth Calculated
+1st Salary,1,15,100.00,60,200.00,60,60
+2nd Salary,2,30,100.00,175,400.00,60,81
+3rd Salary,3,35,100.00,500,600.00,81,109
+4th Salary,4,60,100.00,1000,1000.00,109,148
+5th Salary,5,250,100.00,1530,2000.00,148,200
+6th Salary,6,300,100.00,2500,4000.00,200,270

@@ -1,0 +1,110 @@
+Test ID,Category,Test Case Name,Description,Preconditions,Test Steps,Expected Result,Priority
+LB-001,Leaderboard Creation,Create competitive leaderboard,Admin creates a new competitive ranking leaderboard,Admin logged in with leaderboard permissions,"1. Go to Admin > Leaderboards
+2. Click 'Create Leaderboard'
+3. Select type 'Competitive'
+4. Enter title, description, dates
+5. Configure prize structure (positions 1-10)
+6. Click Save","Leaderboard created successfully with status 'inactive', visible in admin list",High
+LB-002,Leaderboard Creation,Create target-based leaderboard,Admin creates a target achievement leaderboard,Admin logged in with leaderboard permissions,"1. Go to Admin > Leaderboards
+2. Click 'Create Leaderboard'
+3. Select type 'Target'
+4. Enter title, description, dates
+5. Set target referrals and prize amount
+6. Click Save","Leaderboard created with target configuration, status 'inactive'",High
+LB-003,Leaderboard Creation,Create multi-tier target leaderboard,Admin creates leaderboard with multiple reward tiers,Admin logged in with leaderboard permissions,"1. Create target leaderboard
+2. Add multiple tiers (5 refs=$50, 10 refs=$100, 20 refs=$250)
+3. Save leaderboard","Multiple tiers saved correctly, displayed in ascending order by target",High
+LB-004,Leaderboard Creation,Validation - end date before start date,System prevents invalid date range,"Admin on create form","1. Set start date to future
+2. Set end date before start date
+3. Try to save","Validation error shown: 'End date must be after start date'",Medium
+LB-005,Leaderboard Creation,Validation - empty prize structure,System requires prize configuration,Admin creating competitive leaderboard,"1. Fill all required fields
+2. Leave prize structure empty
+3. Try to save","Validation error: 'At least one prize must be configured'",Medium
+LB-006,Leaderboard Activation,Activate leaderboard manually,Admin activates an inactive leaderboard,"Inactive leaderboard exists, current date within date range","1. Go to leaderboard details
+2. Click 'Activate'
+3. Confirm action","Status changes to 'active', leaderboard visible to users if show_to_users=true",High
+LB-007,Leaderboard Activation,Auto-activation on start date,System activates leaderboard when start date reached,"Inactive leaderboard with future start date","1. Wait for start date to pass
+2. Run scheduled command or check status","Leaderboard automatically becomes active",Medium
+LB-008,Leaderboard Visibility,Show to users toggle,Admin controls user visibility,"Active leaderboard exists","1. Toggle 'Show to Users' off
+2. Save
+3. Check user dashboard","Leaderboard hidden from user view but still tracks participation",Medium
+LB-009,Leaderboard Visibility,User sees active leaderboards,Users can view active promotions on dashboard,"Active leaderboard with show_to_users=true","1. Login as regular user
+2. Go to Leaderboards section","Active leaderboards displayed with countdown, current standings",High
+LB-010,Referral Counting,Direct referrals only (Level 1),Count only direct sponsor referrals,"Leaderboard configured with referral_type='direct'","1. User A refers User B (direct)
+2. User B refers User C (indirect to A)
+3. Check User A's count","User A count = 1 (only User B counted)",High
+LB-011,Referral Counting,Multi-level referrals,Count referrals up to configured level,"Leaderboard with referral_type='multi_level', max_level=5","1. User A refers B, B refers C, C refers D (3 levels)
+2. Calculate positions","User A count = 3 (all levels within limit counted)",High
+LB-012,Referral Counting,Referral must have investment,Only count referrals with active investments,"Leaderboard active","1. User A refers User B (no investment)
+2. User A refers User C (has investment)
+3. Check counts","Only User C counted in User A's referral count",High
+LB-013,Referral Counting,Minimum investment amount filter,Apply minimum investment threshold,"Leaderboard with min_investment_amount=$100","1. User refers person with $50 investment
+2. User refers person with $150 investment
+3. Check count","Only $150 investment referral counted",Medium
+LB-014,Referral Counting,Referral date within period,Only count referrals made during leaderboard period,"Leaderboard Jan 1-31, 2026","1. User has referral from Dec 2025 (before)
+2. User has referral from Jan 15 (during)
+3. Check count","Only Jan 15 referral counted",High
+LB-015,Position Calculation,Calculate competitive positions,Rank users by referral count,"Active competitive leaderboard with participants","1. Run position calculation command
+2. Check positions table","Users ranked 1st to Nth by referral count descending",High
+LB-016,Position Calculation,Handle ties in ranking,Same referral count gets same position,"User A: 10 refs, User B: 10 refs, User C: 8 refs","1. Calculate positions","A and B both get position 1, C gets position 3",Medium
+LB-017,Position Calculation,Tie-breaker by earliest referral,First to reach count wins tie,"User A and B both have 10 refs, A's first ref at 10am, B's at 9am","1. Calculate positions","B gets higher position (earlier first referral)",Medium
+LB-018,Position Calculation,Target qualification check,Calculate who meets target,Target leaderboard: 10 referrals = $100,"1. User A has 12 refs
+2. User B has 8 refs
+3. Calculate","User A qualified (prize_amount=$100), User B not qualified (prize_amount=0)",High
+LB-019,Position Calculation,Multi-tier prize assignment,Assign correct tier prize based on count,"Tiers: 5=$50, 10=$100, 20=$250; User has 15 refs","1. Calculate positions","User gets $100 (highest achieved tier: 10 refs)",High
+LB-020,Position Calculation,Max winners limit,Respect maximum winners setting,"Target leaderboard, max_winners=3, 5 users qualified","1. Calculate positions","Only first 3 qualified users get prize amounts, others $0",Medium
+LB-021,Position Calculation,Max positions display limit,Limit displayed positions,"Leaderboard max_positions=50, 100 participants","1. Calculate positions
+2. Check positions table","Only 50 positions created in database",Low
+LB-022,Leaderboard Completion,Auto-complete on end date,System completes expired leaderboards,"Active leaderboard past end date","1. Run leaderboards:calculate-positions command","Leaderboard status changes to 'completed', final positions calculated",High
+LB-023,Leaderboard Completion,Manual completion,Admin manually completes leaderboard,Active leaderboard,"1. Go to leaderboard admin
+2. Click 'Complete'
+3. Confirm","Status = 'completed', no more position updates",Medium
+LB-024,Prize Distribution,Distribute prizes button visible,Button shows for completed leaderboard,"Completed leaderboard, prizes not distributed","1. View leaderboard admin details","'Distribute Prizes' button visible and enabled",High
+LB-025,Prize Distribution,Successful prize distribution,Admin distributes prizes to winners,"Completed leaderboard with winners","1. Click 'Distribute Prizes'
+2. Confirm action","prizes_distributed=true, winners' wallets credited, transactions created",High
+LB-026,Prize Distribution,Prize credited to wallet,Winner's wallet balance increases,"Winner with prize_amount=$100, current balance=$500","1. Distribute prizes
+2. Check winner's wallet","Balance = $600, USDT_BEP20 wallet updated",High
+LB-027,Prize Distribution,Transaction record created,System logs prize transaction,"Prize distributed to winner","1. Check winner's transaction history","Transaction type='leaderboard_prize', status='completed', metadata includes leaderboard info",High
+LB-028,Prize Distribution,Cannot distribute twice,Prevent duplicate prize distribution,"Leaderboard with prizes_distributed=true","1. Try to click 'Distribute Prizes' again","Button disabled or hidden, distribution blocked",Medium
+LB-029,Prize Distribution,Skip users without wallet,Handle missing wallet gracefully,"Winner has no crypto wallet set up","1. Attempt distribution","Wallet created automatically, prize credited, logged appropriately",Medium
+LB-030,Prize Distribution,Partial distribution handling,Handle failures during distribution,"One user missing, others valid","1. Distribute prizes","Valid users receive prizes, errors logged for failed cases",Medium
+LB-031,User View,View current position,User sees their rank on active leaderboard,"User participating in leaderboard","1. Go to leaderboard page
+2. View standings","User sees their position highlighted, referral count, potential prize",High
+LB-032,User View,View leaderboard details,User can view full leaderboard info,"Active visible leaderboard","1. Click on leaderboard
+2. View details page","Shows title, description, dates, prize structure, top participants",High
+LB-033,User View,Countdown timer display,Show time remaining,"Active leaderboard ending in 3 days","1. View leaderboard","Timer shows '3 days remaining' or equivalent",Medium
+LB-034,User View,Progress bar for target,Show user's progress toward target,Target leaderboard: 10 refs required,"1. User has 7 refs
+2. View leaderboard","Progress bar at 70%, shows '7/10 referrals'",Medium
+LB-035,User View,View completed leaderboards,User sees past promotions,"Completed leaderboards exist","1. Go to leaderboard history","List of completed leaderboards with user's final position/prize",Medium
+LB-036,User View,Winner display on completion,Show winners after leaderboard ends,"Completed leaderboard with prizes distributed","1. View completed leaderboard","Podium display with 1st/2nd/3rd, medal icons, prize amounts",High
+LB-037,User View,Share leaderboard link,User can share promotion,"Social sharing enabled on leaderboard","1. Click share button
+2. Choose platform","Shareable link generated with referral code embedded",Low
+LB-038,Admin Dashboard,Leaderboard statistics,Admin sees aggregate stats,"Multiple leaderboards exist","1. Go to Admin > Leaderboards","Stats show: total/active/completed count, total prizes, participants",High
+LB-039,Admin Dashboard,View all leaderboards list,Admin can browse all leaderboards,"Leaderboards exist","1. Go to Admin > Leaderboards
+2. View list","Table with title, type, status, dates, prize total, actions",High
+LB-040,Admin Dashboard,Filter by status,Admin filters leaderboard list,"Multiple status leaderboards exist","1. Select 'Active' filter","Only active leaderboards shown",Medium
+LB-041,Admin Dashboard,Filter by type,Admin filters by competitive/target,Both types exist,"1. Select 'Target' filter","Only target-based leaderboards shown",Medium
+LB-042,Admin Dashboard,View leaderboard participants,Admin sees participant details,"Leaderboard with positions","1. View leaderboard details
+2. Check participants tab","List of users with position, referral count, prize amount, awarded status",High
+LB-043,Admin Dashboard,Export leaderboard data,Admin exports to CSV,Leaderboard with participants,"1. Click 'Export' button","CSV downloaded with user names, positions, counts, prizes",Low
+LB-044,Admin Edit,Edit inactive leaderboard,Admin modifies before activation,Inactive leaderboard,"1. Edit title, dates, prizes
+2. Save","Changes saved successfully",High
+LB-045,Admin Edit,Limited edit on active,Restrict edits during active period,Active leaderboard,"1. Try to edit core fields","Only description and show_to_users editable, dates/prizes locked",Medium
+LB-046,Admin Edit,Delete inactive leaderboard,Admin deletes unused leaderboard,Inactive leaderboard with no participants,"1. Click Delete
+2. Confirm","Leaderboard removed from database",Medium
+LB-047,Admin Edit,Cannot delete with participants,Prevent deletion with data,"Leaderboard with positions recorded","1. Try to delete","Error: 'Cannot delete leaderboard with participants'",Medium
+LB-048,Scheduled Tasks,Position calculation scheduler,Auto-calculate positions periodically,"Active leaderboard, scheduler running","1. Wait for 15-minute interval
+2. Check positions","Positions updated automatically",High
+LB-049,Scheduled Tasks,Handle calculation errors,Graceful error handling,Invalid data scenario,"1. Trigger calculation with error condition","Error logged, other leaderboards still processed",Medium
+LB-050,Edge Cases,No participants,Handle empty leaderboard,Active leaderboard with no referrals,"1. Calculate positions","No positions created, no errors",Low
+LB-051,Edge Cases,User deleted mid-contest,Handle deleted user gracefully,User in leaderboard then deleted,"1. Delete user
+2. View leaderboard","Position shows 'Deleted User', no crashes",Medium
+LB-052,Edge Cases,Overlapping leaderboards,Multiple active at same time,"Two active leaderboards","1. Check both calculate independently","Each tracks its own referrals and positions",Medium
+LB-053,Edge Cases,Zero prize amount,Position without prize,"Competitive: only top 3 get prizes, user at position 5","1. Calculate positions","User shows in leaderboard, prize_amount=0",Low
+LB-054,Performance,Large participant count,Handle many participants,"1000+ users with referrals","1. Run position calculation","Completes within reasonable time (<30 sec), no timeouts",Medium
+LB-055,Performance,Cached position display,Use caching for display,"Active leaderboard","1. View leaderboard multiple times","Positions retrieved from cache, not recalculated each view",Low
+LB-056,Permissions,RBAC - view permission,User can view with permission,Admin with 'view_leaderboards' only,"1. Access leaderboard list","Can view but not edit/create/delete",High
+LB-057,Permissions,RBAC - create permission,User can create with permission,Admin with 'create_leaderboards',"1. Try to create leaderboard","Creation form accessible and functional",High
+LB-058,Permissions,RBAC - edit permission,User can edit with permission,Admin with 'edit_leaderboards',"1. Try to edit existing","Edit form accessible for allowed leaderboards",High
+LB-059,Permissions,RBAC - delete permission,User can delete with permission,Admin with 'delete_leaderboards',"1. Try to delete leaderboard","Delete action available and works",High
+LB-060,Permissions,RBAC - distribute permission,Prize distribution requires permission,Admin with 'manage_leaderboards',"1. Try to distribute prizes","Action blocked without proper permission",High

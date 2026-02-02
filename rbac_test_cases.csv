@@ -1,0 +1,266 @@
+Test ID,Category,Feature,Test Case,Pre-conditions,Test Steps,Expected Result,Priority,Permission Required,Status
+RBAC-001,Role Management,Create Role,Verify admin can create new custom role,Admin with roles.manage permission,"1. Login as admin
+2. Go to Admin Roles page
+3. Click Create New Role
+4. Enter role name and description
+5. Select permissions
+6. Click Save",New role created and appears in roles list,High,roles.manage,
+RBAC-002,Role Management,Create Role,Verify role name is required,Admin with roles.manage permission,"1. Go to create role page
+2. Leave name field empty
+3. Click Save",Validation error: Name is required,Medium,roles.manage,
+RBAC-003,Role Management,Create Role,Verify duplicate role names rejected,Existing role named 'Support Staff',"1. Go to create role page
+2. Enter 'Support Staff' as name
+3. Click Save",Error: Role name already exists,Medium,roles.manage,
+RBAC-004,Role Management,Create Role,Verify slug auto-generated from name,Admin with roles.manage permission,"1. Go to create role page
+2. Enter 'Finance Manager' as name
+3. Save role",Slug 'finance-manager' auto-generated,Low,roles.manage,
+RBAC-005,Role Management,Edit Role,Verify admin can edit existing role,Admin with roles.manage permission,"1. Go to roles list
+2. Click Edit on a role
+3. Change name/description
+4. Update permissions
+5. Save",Role updated successfully,High,roles.manage,
+RBAC-006,Role Management,Edit Role,Verify system roles can be edited,Admin with roles.manage permission and system role exists,"1. Go to roles list
+2. Click Edit on system role (e.g., Support Staff)
+3. Modify permissions
+4. Save",System role permissions updated,Medium,roles.manage,
+RBAC-007,Role Management,Delete Role,Verify custom roles can be deleted,Custom role with no assigned users,"1. Go to roles list
+2. Click Delete on custom role
+3. Confirm deletion",Role deleted from system,Medium,roles.manage,
+RBAC-008,Role Management,Delete Role,Verify system roles cannot be deleted,System role exists,"1. Go to roles list
+2. Attempt to delete system role",Delete action blocked or error: Cannot delete system role,High,roles.manage,
+RBAC-009,Role Management,Delete Role,Verify roles with assigned users cannot be deleted,Role assigned to active users,"1. Go to roles list
+2. Try to delete role with users
+3. Confirm deletion",Error: Cannot delete role with assigned users,High,roles.manage,
+RBAC-010,Role Management,View Role,Verify admin can view role details,Admin with roles.view permission,"1. Go to roles list
+2. Click on role name to view",Role details page shows name description and permissions,Medium,roles.view,
+RBAC-011,Role Management,View Role,Verify admin without roles.view cannot access roles page,Admin with limited permissions (no roles.view),"1. Login as limited admin
+2. Try to navigate to /admin/roles",Access denied - 403 error,High,None (testing denial),
+RBAC-012,Permission Assignment,Grant Permission,Verify permissions can be added to role,Admin with roles.manage permission,"1. Edit existing role
+2. Check additional permission checkboxes
+3. Save",New permissions added to role,High,roles.manage,
+RBAC-013,Permission Assignment,Revoke Permission,Verify permissions can be removed from role,Role with multiple permissions,"1. Edit role
+2. Uncheck permission checkboxes
+3. Save",Permissions removed from role,High,roles.manage,
+RBAC-014,Permission Assignment,Module Grouping,Verify permissions grouped by module in UI,Admin with roles.manage permission,"1. Go to create/edit role page
+2. View permissions section",Permissions organized by module (Dashboard Analytics Users etc),Low,roles.manage,
+RBAC-015,Permission Assignment,Bulk Selection,Verify select all permissions for module works,Admin with roles.manage permission,"1. Go to edit role page
+2. Click Select All for a module",All permissions in that module selected,Low,roles.manage,
+RBAC-016,Staff Management,Assign Role,Verify admin can assign role to user,Admin with roles.manage permission and regular user exists,"1. Go to Staff Management
+2. Search for user
+3. Select admin role from dropdown
+4. Save",User assigned admin role and gains admin access,High,roles.manage,
+RBAC-017,Staff Management,Change Role,Verify admin can change user's role,User with existing admin role,"1. Go to Staff Management
+2. Find staff member
+3. Change role to different one
+4. Save",User's role changed and permissions updated,High,roles.manage,
+RBAC-018,Staff Management,Remove Role,Verify admin can demote staff to regular user,Staff member with admin role,"1. Go to Staff Management
+2. Find staff member
+3. Click Demote/Remove Role
+4. Confirm",User loses admin access and becomes regular user,High,roles.manage,
+RBAC-019,Staff Management,View Staff,Verify admin can view staff list,Admin with roles.view permission,"1. Go to Staff Management page
+2. View list",All users with admin roles displayed,Medium,roles.view,
+RBAC-020,Staff Management,Search Staff,Verify admin can search staff members,Admin with roles.view permission,"1. Go to Staff Management
+2. Enter search term
+3. Search",Matching staff members displayed,Low,roles.view,
+RBAC-021,Super Admin,Full Access,Verify Super Admin can access all features,User with Super Admin role,"1. Login as Super Admin
+2. Navigate to every admin section
+3. Perform actions in each",All sections accessible without restrictions,High,N/A (Super Admin),
+RBAC-022,Super Admin,Bypass Permissions,Verify Super Admin bypasses permission checks,Super Admin user,"1. Login as Super Admin
+2. Access feature that requires specific permission
+3. Perform restricted action",Action allowed regardless of explicit permissions,High,N/A (Super Admin),
+RBAC-023,Super Admin,Cannot Be Demoted,Verify Super Admin role cannot be changed by other admins,Super Admin user and another admin,"1. Login as non-Super Admin
+2. Try to change Super Admin's role",Action blocked or option not available,High,roles.manage,
+RBAC-024,Permission Enforcement,Dashboard Access,Verify dashboard.view permission required,Staff without dashboard.view permission,"1. Login as limited staff
+2. Try to access /admin/dashboard",Access denied - 403 error,High,dashboard.view,
+RBAC-025,Permission Enforcement,User View,Verify users.view required to see user list,Staff without users.view permission,"1. Login as limited staff
+2. Try to access /admin/users",Access denied - 403 error,High,users.view,
+RBAC-026,Permission Enforcement,User Edit,Verify users.edit required to modify users,Staff with users.view but not users.edit,"1. Login as staff
+2. Go to user list (allowed)
+3. Try to edit user",Edit action blocked - 403 error,High,users.edit,
+RBAC-027,Permission Enforcement,User Create,Verify users.create required to add users,Staff without users.create permission,"1. Login as staff
+2. Try to access create user page",Access denied - 403 error,High,users.create,
+RBAC-028,Permission Enforcement,User Delete,Verify users.delete required to remove users,Staff without users.delete permission,"1. Login as staff
+2. Try to delete user",Action blocked - 403 error,High,users.delete,
+RBAC-029,Permission Enforcement,User Block,Verify users.block required to block users,Staff without users.block permission,"1. Login as staff
+2. Try to block user",Action blocked - 403 error,High,users.block,
+RBAC-030,Permission Enforcement,Impersonation,Verify users.impersonate required for impersonation,Staff without users.impersonate permission,"1. Login as staff
+2. Try to access /admin/impersonation",Access denied - 403 error,High,users.impersonate,
+RBAC-031,Permission Enforcement,KYC View,Verify kyc.view required to see KYC submissions,Staff without kyc.view permission,"1. Login as staff
+2. Try to access /admin/kyc",Access denied - 403 error,High,kyc.view,
+RBAC-032,Permission Enforcement,KYC Process,Verify kyc.process required to approve/reject,Staff with kyc.view but not kyc.process,"1. Login as staff
+2. View KYC list (allowed)
+3. Try to approve/reject",Action blocked - 403 error,High,kyc.process,
+RBAC-033,Permission Enforcement,Investment View,Verify investments.view required,Staff without investments.view permission,"1. Login as staff
+2. Try to access /admin/investments",Access denied - 403 error,High,investments.view,
+RBAC-034,Permission Enforcement,Investment Manage,Verify investments.manage required to create/edit plans,Staff with investments.view but not investments.manage,"1. Login as staff
+2. View investments (allowed)
+3. Try to create/edit plan",Action blocked - 403 error,High,investments.manage,
+RBAC-035,Permission Enforcement,Withdrawal View,Verify withdrawals.view required,Staff without withdrawals.view permission,"1. Login as staff
+2. Try to access /admin/finance/transactions",Access denied - 403 error,High,withdrawals.view,
+RBAC-036,Permission Enforcement,Withdrawal Process,Verify withdrawals.process required to approve/reject,Staff with withdrawals.view but not withdrawals.process,"1. Login as staff
+2. View withdrawals (allowed)
+3. Try to approve/reject",Action blocked - 403 error,High,withdrawals.process,
+RBAC-037,Permission Enforcement,Deposit View,Verify deposits.view required,Staff without deposits.view permission,"1. Login as staff
+2. Try to access /admin/finance/wallets",Access denied - 403 error,High,deposits.view,
+RBAC-038,Permission Enforcement,Deposit Manage,Verify deposits.manage required to adjust balances,Staff with deposits.view but not deposits.manage,"1. Login as staff
+2. View wallets (allowed)
+3. Try to adjust balance",Action blocked - 403 error,High,deposits.manage,
+RBAC-039,Permission Enforcement,Support View,Verify support.view required,Staff without support.view permission,"1. Login as staff
+2. Try to access /admin/support",Access denied - 403 error,High,support.view,
+RBAC-040,Permission Enforcement,Support Manage,Verify support.manage required to respond,Staff with support.view but not support.manage,"1. Login as staff
+2. View tickets (allowed)
+3. Try to reply to ticket",Action blocked - 403 error,High,support.manage,
+RBAC-041,Permission Enforcement,FAQ Management,Verify support.manage required for FAQ CRUD,Staff with support.view but not support.manage,"1. Login as staff
+2. View FAQs (allowed)
+3. Try to create/edit/delete FAQ",Action blocked - 403 error,Medium,support.manage,
+RBAC-042,Permission Enforcement,Settings View,Verify settings.view required,Staff without settings.view permission,"1. Login as staff
+2. Try to access /admin/settings",Access denied - 403 error,High,settings.view,
+RBAC-043,Permission Enforcement,Settings Manage,Verify settings.manage required to modify settings,Staff with settings.view but not settings.manage,"1. Login as staff
+2. View settings (allowed)
+3. Try to save changes",Action blocked - 403 error,High,settings.manage,
+RBAC-044,Permission Enforcement,Commission View,Verify commission.view required,Staff without commission.view permission,"1. Login as staff
+2. Try to access /admin/referrals/commission",Access denied - 403 error,Medium,commission.view,
+RBAC-045,Permission Enforcement,Commission Manage,Verify commission.manage required to update rates,Staff with commission.view but not commission.manage,"1. Login as staff
+2. View commission settings (allowed)
+3. Try to update rates",Action blocked - 403 error,High,commission.manage,
+RBAC-046,Permission Enforcement,Leaderboard View,Verify leaderboards.view required,Staff without leaderboards.view permission,"1. Login as staff
+2. Try to access /admin/leaderboards",Access denied - 403 error,Medium,leaderboards.view,
+RBAC-047,Permission Enforcement,Leaderboard Manage,Verify leaderboards.manage required to create/edit,Staff with leaderboards.view but not leaderboards.manage,"1. Login as staff
+2. View leaderboards (allowed)
+3. Try to create/edit",Action blocked - 403 error,Medium,leaderboards.manage,
+RBAC-048,Permission Enforcement,Announcement View,Verify announcements.view required,Staff without announcements.view permission,"1. Login as staff
+2. Try to access /admin/announcements",Access denied - 403 error,Medium,announcements.view,
+RBAC-049,Permission Enforcement,Announcement Manage,Verify announcements.manage required to create/edit,Staff with announcements.view but not announcements.manage,"1. Login as staff
+2. View announcements (allowed)
+3. Try to create/edit",Action blocked - 403 error,Medium,announcements.manage,
+RBAC-050,Permission Enforcement,Analytics View,Verify analytics.view required,Staff without analytics.view permission,"1. Login as staff
+2. Try to access /admin/reports",Access denied - 403 error,Medium,analytics.view,
+RBAC-051,Permission Enforcement,Analytics Export,Verify analytics.export required to export data,Staff with analytics.view but not analytics.export,"1. Login as staff
+2. View reports (allowed)
+3. Try to export data",Action blocked - 403 error,Medium,analytics.export,
+RBAC-052,Permission Enforcement,Email View,Verify email.view required,Staff without email.view permission,"1. Login as staff
+2. Try to access email settings",Access denied - 403 error,Medium,email.view,
+RBAC-053,Permission Enforcement,Email Manage,Verify email.manage required for mass email,Staff without email.manage permission,"1. Login as staff
+2. Try to access /admin/mass-email",Access denied - 403 error,High,email.manage,
+RBAC-054,Permission Enforcement,Email Settings,Verify email.settings required for templates,Staff without email.settings permission,"1. Login as staff
+2. Try to access /admin/email-templates",Access denied - 403 error,Medium,email.settings,
+RBAC-055,Permission Enforcement,Push View,Verify push.view required,Staff without push.view permission,"1. Login as staff
+2. Try to access /admin/push-notifications",Access denied - 403 error,Medium,push.view,
+RBAC-056,Permission Enforcement,Push Send,Verify push.send required to send notifications,Staff with push.view but not push.send,"1. Login as staff
+2. View push page (allowed)
+3. Try to send notification",Action blocked - 403 error,Medium,push.send,
+RBAC-057,Permission Enforcement,CRM View,Verify crm.view required,Staff without crm.view permission,"1. Login as staff
+2. Try to access /admin/crm",Access denied - 403 error,Medium,crm.view,
+RBAC-058,Permission Enforcement,CRM Manage,Verify crm.manage required to modify leads,Staff with crm.view but not crm.manage,"1. Login as staff
+2. View CRM (allowed)
+3. Try to update lead",Action blocked - 403 error,Medium,crm.manage,
+RBAC-059,Permission Enforcement,Tracking Pixels,Verify settings.manage required for pixels,Staff without settings.manage permission,"1. Login as staff
+2. Try to access /admin/pixels",Access denied or view only - 403 for edits,Medium,settings.manage,
+RBAC-060,Sidebar Visibility,Menu Filtering,Verify sidebar shows only permitted sections,Staff with limited permissions (e.g. only support),"1. Login as limited staff
+2. View admin sidebar",Only permitted menu items visible (e.g. Support only),High,Various,
+RBAC-061,Sidebar Visibility,Dashboard Link,Verify Dashboard link visibility based on permission,Staff without dashboard.view,"1. Login as staff
+2. Check sidebar",Dashboard link not visible,Medium,dashboard.view,
+RBAC-062,Sidebar Visibility,Users Link,Verify Users link visibility based on permission,Staff without users.view,"1. Login as staff
+2. Check sidebar",Users menu not visible,Medium,users.view,
+RBAC-063,Sidebar Visibility,Finance Link,Verify Finance menu visibility,Staff without any finance permissions,"1. Login as staff
+2. Check sidebar",Finance menu section not visible,Medium,Various finance,
+RBAC-064,Sidebar Visibility,Settings Link,Verify Settings link visibility,Staff without settings.view,"1. Login as staff
+2. Check sidebar",Settings menu not visible,Medium,settings.view,
+RBAC-065,Access Denial,No Role Assigned,Verify user without admin_role_id denied admin access,User with role='admin' but no admin_role_id,"1. Login as user
+2. Try to access /admin",Access denied - 403 error,High,N/A,
+RBAC-066,Access Denial,Inactive Role,Verify users with inactive role denied access,User assigned to inactive role,"1. Deactivate user's admin role
+2. User tries to access admin",Access denied - 403 error,High,N/A,
+RBAC-067,Access Denial,Regular User,Verify regular users cannot access admin,Regular user without admin role,"1. Login as regular user
+2. Try to access /admin",Access denied or redirect to user dashboard,High,N/A,
+RBAC-068,Access Denial,Direct URL Access,Verify direct URL access blocked without permission,Staff without users.view permission,"1. Login as staff
+2. Directly enter URL /admin/users/1/edit",Access denied - 403 error,High,users.edit,
+RBAC-069,Permission Inheritance,View Implies View,Verify view permission needed before manage,Staff with only users.edit (no users.view),"1. Login as staff
+2. Try to access user edit page directly",Should require users.view to see any user pages,Medium,Various,
+RBAC-070,Session Handling,Permission Change Immediate,Verify permission changes apply immediately,Staff currently logged in,"1. Staff is logged in with full access
+2. Super Admin removes a permission from their role
+3. Staff refreshes page",New permission restrictions apply immediately,High,N/A,
+RBAC-071,Session Handling,Role Change Immediate,Verify role changes apply immediately,Staff currently logged in,"1. Staff is logged in
+2. Super Admin changes their role to limited one
+3. Staff refreshes page",New role permissions apply immediately,High,N/A,
+RBAC-072,Session Handling,Role Removal Immediate,Verify role removal logs out or blocks,Staff currently logged in,"1. Staff is logged in
+2. Super Admin removes their admin role
+3. Staff tries to access admin",Immediate access denial,High,N/A,
+RBAC-073,Audit Trail,Role Creation Logged,Verify role creation is logged,Admin creates new role,"1. Create new role
+2. Check audit logs",Role creation recorded with admin user and timestamp,Low,roles.manage,
+RBAC-074,Audit Trail,Permission Change Logged,Verify permission changes logged,Admin modifies role permissions,"1. Edit role permissions
+2. Check audit logs",Permission changes recorded,Low,roles.manage,
+RBAC-075,Audit Trail,Role Assignment Logged,Verify role assignments logged,Admin assigns role to user,"1. Assign role to user
+2. Check audit logs",Assignment recorded with details,Low,roles.manage,
+RBAC-076,Multiple Permissions,Any Permission Check,Verify access granted if ANY permission matches,Staff with users.view but checking users.view OR users.edit,"1. Route requires either users.view OR users.edit
+2. Staff has only users.view
+3. Access route",Access granted (has at least one),Medium,Various,
+RBAC-077,Multiple Permissions,All Permissions Check,Verify access denied if missing any required,Staff with only users.view when route needs users.view AND users.edit,"1. Route requires both permissions
+2. Staff has only one
+3. Access route",Access denied - missing required permission,Medium,Various,
+RBAC-078,Edge Cases,Empty Permissions Role,Verify role with no permissions blocks all features,Role created with no permissions selected,"1. Assign user to empty-permission role
+2. User tries to access any admin feature",Access denied to all features except basic admin,Medium,N/A,
+RBAC-079,Edge Cases,All Permissions Role,Verify role with all permissions grants full access,Custom role with every permission checked,"1. Assign user to full-permission role
+2. Access all features",All features accessible (like Super Admin),Medium,All,
+RBAC-080,Edge Cases,Self Role Change,Verify admin cannot remove their own admin access,Admin trying to demote themselves,"1. Login as admin
+2. Try to remove own admin role",Action blocked or warning displayed,High,roles.manage,
+RBAC-081,Edge Cases,Last Super Admin,Verify cannot demote last Super Admin,Only one Super Admin exists,"1. Try to change last Super Admin's role
+2. Or try to deactivate Super Admin role",Action blocked - must maintain at least one Super Admin,High,roles.manage,
+RBAC-082,UI Consistency,Button Visibility,Verify action buttons hidden without permission,Staff with view-only permissions,"1. Login as view-only staff
+2. View any list page",Edit Delete Create buttons not visible,Medium,Various,
+RBAC-083,UI Consistency,Form Fields,Verify forms read-only without edit permission,Staff with view but not edit permissions,"1. Login as view-only staff
+2. Access detail page",Form fields are read-only or edit not accessible,Medium,Various,
+RBAC-084,UI Consistency,Bulk Actions,Verify bulk actions hidden without permission,Staff without relevant manage permissions,"1. Login as limited staff
+2. View list with bulk actions",Bulk action checkboxes and buttons hidden,Medium,Various,
+RBAC-085,API Protection,API Routes Protected,Verify API endpoints respect permissions,Staff without users.view making API call,"1. Login as limited staff
+2. Call /admin/users/api/list via AJAX",403 error returned,High,users.view,
+RBAC-086,API Protection,AJAX Actions Protected,Verify AJAX actions check permissions,Staff without users.edit triggering AJAX edit,"1. Login as limited staff
+2. Manipulate DOM to show edit button
+3. Click edit (AJAX call)",403 error - server-side check blocks action,High,users.edit,
+RBAC-087,Role Status,Inactive Role Hidden,Verify inactive roles not assignable,Inactive role exists,"1. Go to staff management
+2. View role dropdown",Inactive roles not shown in assignment dropdown,Medium,roles.manage,
+RBAC-088,Role Status,Activate Role,Verify admin can activate inactive role,Inactive role exists,"1. Go to role management
+2. Toggle role to active
+3. Save",Role becomes active and assignable,Medium,roles.manage,
+RBAC-089,Role Status,Deactivate Role,Verify admin can deactivate role,Active role with no users,"1. Go to role management
+2. Toggle role to inactive
+3. Save",Role becomes inactive,Medium,roles.manage,
+RBAC-090,Role Status,Deactivate Role With Users,Verify warning when deactivating role with users,Active role assigned to users,"1. Try to deactivate role
+2. Confirm action",Warning shown about affected users or action blocked,Medium,roles.manage,
+RBAC-091,Permission Modules,Dashboard Module,Verify dashboard module permissions work,Staff with only dashboard.view,"1. Login as staff
+2. Access dashboard
+3. Try other sections",Only dashboard accessible,High,dashboard.view,
+RBAC-092,Permission Modules,Users Module,Verify all users permissions work correctly,Staff with all users.* permissions,"1. Login as staff
+2. View users
+3. Create user
+4. Edit user
+5. Delete user
+6. Block user
+7. Impersonate",All user actions work correctly,High,users.*,
+RBAC-093,Permission Modules,Finance Module,Verify all finance permissions,Staff with all finance permissions,"1. Login as staff
+2. View/manage investments
+3. View/process withdrawals
+4. View/manage deposits",All finance actions work,High,Various finance,
+RBAC-094,Permission Modules,Support Module,Verify all support permissions,Staff with all support permissions,"1. Login as staff
+2. View tickets
+3. Reply to tickets
+4. Manage FAQ",All support actions work,Medium,support.*,
+RBAC-095,Permission Modules,Settings Module,Verify all settings permissions,Staff with all settings permissions,"1. Login as staff
+2. View settings
+3. Modify settings
+4. Manage cryptocurrencies
+5. Manage pixels",All settings actions work,Medium,settings.*,
+RBAC-096,Cross-Module,Finance Staff Role,Test typical finance staff access pattern,Staff with only finance-related permissions,"1. Login as finance staff
+2. Can access deposits/withdrawals/investments
+3. Cannot access users/settings/support",Correct access pattern enforced,High,Various finance,
+RBAC-097,Cross-Module,Support Staff Role,Test typical support staff access pattern,Staff with only support-related permissions,"1. Login as support staff
+2. Can access tickets/FAQ
+3. Cannot access finance/settings/users",Correct access pattern enforced,High,support.*,
+RBAC-098,Cross-Module,KYC Staff Role,Test typical KYC staff access pattern,Staff with only KYC permissions,"1. Login as KYC staff
+2. Can view and process KYC
+3. Cannot access other sections",Correct access pattern enforced,High,kyc.*,
+RBAC-099,Cross-Module,Marketing Staff Role,Test typical marketing staff access,Staff with announcements and leaderboards permissions,"1. Login as marketing staff
+2. Can manage announcements/leaderboards
+3. Cannot access finance/users",Correct access pattern enforced,Medium,announcements.* leaderboards.*,
+RBAC-100,Regression,Permission After Upgrade,Verify permissions intact after system upgrade,System with existing roles and permissions,"1. Perform system update
+2. Check existing roles
+3. Verify permissions still assigned",All existing permissions preserved,High,N/A,

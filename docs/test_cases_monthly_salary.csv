@@ -1,0 +1,75 @@
+Test ID,Category,Test Case Name,Description,Preconditions,Test Steps,Expected Result,Priority
+MS-001,Stage Configuration,View all salary stages,Verify admin can view all 6 salary stages,"Admin logged in, Salary stages seeded","1. Navigate to /admin/salary/stages
+2. Check all stages visible",All 6 stages displayed with correct requirements and amounts,High
+MS-002,Stage Configuration,Edit stage requirements,Verify admin can edit stage requirements,"Admin logged in with salary.manage permission","1. Navigate to /admin/salary/stages
+2. Click Edit on Stage 1
+3. Change direct_members_required to 5
+4. Save changes",Stage requirements updated successfully,High
+MS-003,Stage Configuration,Edit salary amount,Verify admin can change salary amount for a stage,"Admin logged in with salary.manage permission","1. Navigate to /admin/salary/stages
+2. Click Edit on Stage 1
+3. Change salary_amount to 250
+4. Save changes",Salary amount updated to $250,High
+MS-004,Stage Configuration,Toggle stage active status,Verify admin can enable/disable stages,"Admin logged in with salary.manage permission","1. Navigate to /admin/salary/stages
+2. Toggle Stage 6 inactive
+3. Toggle Stage 6 active again",Stage status toggles correctly,Medium
+MS-005,Qualification,Stage 1 - Direct members met,User with 3 direct members (min $50 each) qualifies for Stage 1,"Stage 1: 3 direct, $100 deposit, 10 team; User has 3 direct referrals with $50+ investments","1. Navigate to /admin/salary/distribution
+2. Select Stage 1
+3. Check qualified users list","User appears in qualified users list with green checkmarks",High
+MS-006,Qualification,Stage 1 - Self deposit requirement,User must have $100+ in active packages for Stage 1,"User has 3 direct referrals but only $50 in active packages","1. Check qualification for Stage 1","User does NOT appear in qualified list (self deposit not met)",High
+MS-007,Qualification,Stage 1 - Team (L2+L3) requirement,User must have 10+ team members (L2+L3 combined),"User has 3 direct, $100 deposit, but only 5 team members","1. Check qualification for Stage 1","User does NOT appear in qualified list (team not met)",High
+MS-008,Qualification,Referral minimum investment filter,Only referrals with $50+ investment count,"User has 5 direct referrals but only 2 have $50+ investments","1. Check direct member count in qualification",Only 2 direct members counted (not 5),High
+MS-009,Qualification,Sequential stage completion required,User cannot qualify for Stage 2 without completing Stage 1,"User meets Stage 2 requirements but never received Stage 1 salary","1. Check Stage 2 qualified users",User does NOT appear (must complete Stage 1 first),High
+MS-010,Qualification,Stage 2 after Stage 1 completion,User qualifies for Stage 2 after receiving Stage 1,"User received Stage 1 salary, now meets Stage 2 requirements","1. Process Stage 1 payout for user
+2. User gains more referrals for Stage 2
+3. Check Stage 2 qualified users",User appears in Stage 2 qualified list,High
+MS-011,Qualification,Non-reusable referrals,Referrals counted for Stage 1 cannot be used for Stage 2,"User used 3 referrals for Stage 1, now has 5 total direct","1. Complete Stage 1 with 3 referrals
+2. Check Stage 2 (needs 5 direct)
+3. User has 5 total but 3 already used",User needs 8 total direct (3 used + 5 new) for Stage 2,Critical
+MS-012,Qualification,Team members from L2 and L3 only,Team count excludes L1 (direct referrals),"User has L1: 5, L2: 8, L3: 7","1. Check team count in qualification",Team count = 15 (8 + 7, not including L1),High
+MS-013,Payout,Single user payout,Admin can process individual payout,"Qualified user exists for Stage 1","1. Navigate to /admin/salary/distribution
+2. Select Stage 1
+3. Click Process button for user",User receives salary amount in wallet,High
+MS-014,Payout,Bulk payout processing,Admin can process multiple payouts at once,"Multiple qualified users for Stage 1","1. Select Stage 1
+2. Check select-all checkbox
+3. Click Process All Payouts",All selected users receive salary amounts,High
+MS-015,Payout,Payout creates correct transaction,Salary payout creates transaction with type 'salary',"User receives Stage 1 payout","1. Process payout
+2. Check user's transaction history",Transaction shows type='salary', amount=$200, description includes stage name,High
+MS-016,Payout,One-time payout per stage,User cannot receive same stage payout twice,"User already received Stage 1 salary","1. Check Stage 1 qualified users",User does NOT appear (already completed Stage 1),Critical
+MS-017,Payout,Progress tracking updated,UserSalaryProgress updated after payout,"User receives Stage 1 payout","1. Process payout
+2. Check user_salary_progress table",New record: user_id, stage_id=1, completed_at, referrals_used_count=3,High
+MS-018,Payout,Payout history recorded,SalaryPayout record created,"User receives payout","1. Process payout
+2. Navigate to /admin/salary/history",Payout record shows user, stage, amount, date, admin who processed,High
+MS-019,History,View payout history,Admin can view all past payouts,"Some payouts processed","1. Navigate to /admin/salary/history
+2. Check records displayed",All payouts shown with correct details,Medium
+MS-020,History,Filter by stage,Admin can filter history by stage,"Multiple stage payouts exist","1. Navigate to /admin/salary/history
+2. Select Stage 2 from filter
+3. Apply filter",Only Stage 2 payouts displayed,Medium
+MS-021,History,Filter by date range,Admin can filter by date range,"Payouts from different dates exist","1. Set date_from and date_to
+2. Apply filter",Only payouts within date range shown,Medium
+MS-022,History,Search by user,Admin can search history by username/email,"Payouts exist for user 'johnsmith'","1. Enter 'johnsmith' in search
+2. Apply filter",Only payouts for matching users shown,Medium
+MS-023,History,Export CSV,Admin can export payout history to CSV,"Payouts exist","1. Navigate to /admin/salary/history
+2. Click Export CSV",CSV file downloads with all payout records,Low
+MS-024,Dashboard,Overview statistics,Dashboard shows correct statistics,"Some payouts processed","1. Navigate to /admin/salary
+2. Check statistics cards",Total Payouts, Total Amount, Unique Users, Active Stages correct,Medium
+MS-025,Dashboard,Stage breakdown,Dashboard shows payouts per stage,"Payouts for multiple stages exist","1. Navigate to /admin/salary
+2. Check stage overview table",Each stage shows payout count and total amount,Medium
+MS-026,RBAC,salary.view permission required,Users without permission cannot access salary pages,"Admin without salary.view permission","1. Navigate to /admin/salary",Access denied / 403 error,High
+MS-027,RBAC,salary.manage permission for payouts,Users without salary.manage cannot process payouts,"Admin with salary.view but not salary.manage","1. Navigate to /admin/salary/distribution
+2. Try to process payout",Action denied / 403 error,High
+MS-028,RBAC,Sidebar visibility,Salary link only visible with permission,"Admin without salary.view permission","1. Check admin sidebar",Monthly Salary link NOT visible,Medium
+MS-029,Edge Case,No qualified users for stage,Handle empty qualified users list,"No users meet Stage 1 requirements","1. Navigate to /admin/salary/distribution
+2. Select Stage 1",Message: 'No Qualified Users' with appropriate icon,Medium
+MS-030,Edge Case,Inactive stage not shown in distribution,Disabled stages excluded from distribution dropdown,"Stage 6 is inactive","1. Navigate to /admin/salary/distribution
+2. Check stage dropdown",Stage 6 not in dropdown options,Medium
+MS-031,Edge Case,User with exactly minimum requirements,User exactly meets all requirements,"User has exactly 3 direct, $100, 10 team (all minimums)","1. Check Stage 1 qualification",User appears in qualified list,Medium
+MS-032,Edge Case,New user (no referrals) not qualified,User with no activity does not qualify,"Fresh user account with no referrals/investments","1. Check any stage qualification",User does NOT appear in any stage,Low
+MS-033,Integration,Wallet balance updated after payout,User wallet reflects salary amount,"User has $50 wallet balance before payout","1. Process $200 Stage 1 payout
+2. Check user wallet balance",Wallet balance = $250 ($50 + $200),High
+MS-034,Integration,Multiple wallets - correct wallet credited,Salary goes to main/USDT wallet,"User has multiple wallet types","1. Process payout
+2. Check which wallet type received funds",USDT/main wallet credited (not referral bonus wallet),Medium
+MS-035,Stage 6,Highest stage requirements,Stage 6 requires 30 direct, $600 deposit, 500 team, $4000 salary,"Stage 6 configured correctly","1. Navigate to /admin/salary/stages
+2. Check Stage 6 row",Requirements and amount match defaults,High
+MS-036,Validation,Cannot edit stage with invalid values,Negative or zero values rejected,"Admin editing stage","1. Edit stage
+2. Enter -5 for direct_members_required
+3. Try to save",Validation error shown,Medium

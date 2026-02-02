@@ -1,0 +1,52 @@
+Test ID,Category,Test Case Name,Description,Preconditions,Test Steps,Expected Result,Priority
+CS-001,Setting Toggle,Shield can be enabled,Verify admin can enable the referral commission shield,"Admin user logged in, Shield is disabled","1. Navigate to /admin/commission
+2. Locate Commission Rules section
+3. Toggle 'Referral-Based Commission Shield' ON
+4. Click Save Changes",Shield setting is saved as enabled and success message shown,High
+CS-002,Setting Toggle,Shield can be disabled,Verify admin can disable the referral commission shield,"Admin user logged in, Shield is enabled","1. Navigate to /admin/commission
+2. Toggle 'Referral-Based Commission Shield' OFF
+3. Click Save Changes",Shield setting is saved as disabled and success message shown,High
+CS-003,Setting Toggle,Shield setting persists after page reload,Verify the toggle state persists,"Admin user logged in, Shield is enabled","1. Enable shield and save
+2. Refresh the page
+3. Check toggle state",Toggle should remain in the enabled state,Medium
+CS-004,Commission Distribution,Level 1 commission with 1 referral (Shield ON),User with 1 direct referral receives Level 1 commission,"Shield enabled, User A has 1 direct referral, User B earns ROI","1. User B earns $100 ROI
+2. System distributes commissions
+3. Check User A's wallet",User A receives Level 1 commission (5% of $100 = $5),High
+CS-005,Commission Distribution,Level 2 commission blocked with 1 referral (Shield ON),User with only 1 referral does NOT receive Level 2 commission,"Shield enabled, User A has 1 direct referral, User A is Level 2 sponsor","1. User C earns $100 ROI
+2. User B is Level 1 sponsor
+3. User A is Level 2 sponsor
+4. Check User A's wallet",User A does NOT receive Level 2 commission (insufficient referrals),High
+CS-006,Commission Distribution,Level 2 commission with 2 referrals (Shield ON),User with 2 direct referrals receives Level 2 commission,"Shield enabled, User A has 2 direct referrals, User A is Level 2 sponsor","1. User C earns $100 ROI
+2. User A is Level 2 sponsor with 2 referrals
+3. Check User A's wallet",User A receives Level 2 commission (3% of $100 = $3),High
+CS-007,Commission Distribution,Level 3 commission blocked with 2 referrals (Shield ON),User with 2 referrals does NOT receive Level 3 commission,"Shield enabled, User A has 2 direct referrals, User A is Level 3 sponsor","1. User D earns $100 ROI
+2. User A is Level 3 sponsor with only 2 referrals
+3. Check User A's wallet",User A does NOT receive Level 3 commission,High
+CS-008,Commission Distribution,All levels work when shield is OFF,Normal commission distribution when shield is disabled,"Shield disabled, Standard sponsor chain exists","1. Disable shield
+2. User earns ROI
+3. Check all upline sponsors' wallets",All sponsors receive their respective level commissions regardless of referral count,High
+CS-009,Commission Distribution,Chain continues past ineligible sponsor (Shield ON),Commission skips ineligible sponsor but continues to eligible ones,"Shield enabled, Sponsor A (Level 2) has 1 referral, Sponsor B (Level 3) has 5 referrals","1. User earns ROI
+2. Level 2 sponsor has insufficient referrals
+3. Level 3 sponsor has sufficient referrals",Level 2 skipped but Level 3 still receives commission,High
+CS-010,Commission Distribution,Boundary case - exactly N referrals for Level N,User with exactly N referrals receives Level N commission,"Shield enabled, User has exactly 3 direct referrals, User is Level 3 sponsor","1. User earns ROI
+2. Level 3 sponsor has exactly 3 referrals",Level 3 sponsor receives commission (3 >= 3),Medium
+CS-011,Commission Distribution,Level 10 commission requires 10 referrals (Shield ON),User needs 10 referrals for Level 10 commission,"Shield enabled, User is Level 10 sponsor","1. User earns ROI
+2. Level 10 sponsor has 9 referrals",Level 10 sponsor does NOT receive commission,Medium
+CS-012,Commission Distribution,Level 10 commission with 10+ referrals (Shield ON),User with 10+ referrals receives Level 10 commission,"Shield enabled, User has 12 direct referrals","1. User earns ROI
+2. Level 10 sponsor has 12 referrals",Level 10 sponsor receives commission (12 >= 10),Medium
+CS-013,Edge Case,User with 0 referrals receives no commission (Shield ON),User with no referrals blocked from all levels,"Shield enabled, User has 0 direct referrals","1. User B earns ROI
+2. User A is sponsor with 0 referrals",User A receives no commission at any level,High
+CS-014,Edge Case,Inactive sponsor still skipped (Shield ON),Inactive sponsors are skipped regardless of referral count,"Shield enabled, Sponsor is inactive but has 5 referrals","1. User earns ROI
+2. Check inactive sponsor's wallet",Inactive sponsor receives no commission (existing behavior preserved),Medium
+CS-015,Edge Case,Commission disabled user still skipped (Shield ON),Users with commission_disabled flag are skipped,"Shield enabled, Sponsor has commission_disabled=true and 5 referrals","1. User earns ROI
+2. Check disabled sponsor's wallet",Disabled sponsor receives no commission (existing behavior preserved),Medium
+CS-016,Integration,Shield setting saved in database,Verify setting is stored correctly in settings table,"Database access available","1. Enable shield via UI
+2. Query settings table for 'referral_commission_shield_enabled'",Setting exists with value=true and category='commission',Medium
+CS-017,Logging,Shield status logged during distribution,Verify commission distribution logs include shield status,"Shield enabled, Logging enabled","1. User earns ROI
+2. Check laravel.log",Log entry includes 'referral_shield_enabled' => true,Low
+CS-018,Logging,Skipped sponsors logged with reason,When sponsor skipped due to shield verify it's logged,"Shield enabled, Sponsor has insufficient referrals","1. User earns ROI
+2. Check laravel.log",Log entry shows sponsor skipped with required_referrals and actual_referrals,Low
+CS-019,UI Display,Commission Rules card visible,Verify the Commission Rules section appears in admin panel,"Admin logged in","1. Navigate to /admin/commission
+2. Look for Commission Rules card",Card with shield toggle is visible between Direct Sponsor and ROI sections,Medium
+CS-020,UI Display,Example rules shown in UI,Verify example rules are displayed to explain the feature,"Admin logged in","1. Navigate to /admin/commission
+2. Check Commission Rules card",Examples showing Level 1 >= 1 referral etc. are visible,Low

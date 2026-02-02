@@ -1,0 +1,39 @@
+[DRY RUN] Would create wallet:
+  User ID: 663 (old: 663)
+  Currency: USDT_BEP20
+  Balance: 3.68097
+  Total: 8.68097
+  Faucet: 5
+ 681/681 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%
+
+
+╔════════════════════════════════════════╗
+║   DRY RUN - All changes rolled back    ║
+╚════════════════════════════════════════╝
+
+
+═══════════════════════════════════════════
+           MIGRATION SUMMARY
+═══════════════════════════════════════════
++-------------------------------------------+-------+
+| Metric                                    | Count |
++-------------------------------------------+-------+
+| Total Wallet Records Found                | 681   |
+| Successfully Migrated                     | 275   |
+| Skipped (Zero/Negative Balance or Exists) | 601   |
+| Errors                                    | 406   |
++-------------------------------------------+-------+
+
+ERRORS ENCOUNTERED:
++--------+-------------+----------------+-------------------------------------------------------+
+| Old ID | Old User ID | Payment Method | Error                                                 |
++--------+-------------+----------------+-------------------------------------------------------+
+| 1      | 2           | 19             | User ID 2 not found in mapping. User may not have...  |
+| 2      | 3           | 19             | User ID 3 not found in mapping. User may not have...  |
+| 3      | 4           | 19             | User ID 4 not found in mapping. User may not have...  |
+| 4      | 5           | 19             | User ID 5 not found in mapping. User may not have...  |
+| 5      | 6           | 19             | User ID 6 not found in mapping. User may not have...  |
+| 6      | 7           | 19             | User ID 7 not found in mapping. User may not have...  |
+| 7      | 8           | 19             | User ID 8 not found in mapping. User may not have...  |
+| 8      | 9           | 19             | User ID 9 not found in mapping. User may not have...  |
+| 9      | 10          | 19             | User ID 10 not found in mapping. User may not have... |

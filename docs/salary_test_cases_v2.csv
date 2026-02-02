@@ -1,0 +1,95 @@
+Test ID,Category,Test Case Name,Description,Preconditions,Test Steps,Expected Result,Priority
+MSP-001,Application,Check eligibility before applying,User cannot apply without meeting Stage 1 requirements,"User has 2 direct (needs 3), $80 deposit (needs $100)","1. Navigate to /user/salary
+2. Check eligibility status",Shows 'Not Eligible' with missing requirements highlighted,High
+MSP-002,Application,Eligible user can apply,User meeting all Stage 1 requirements can submit application,"User has 3 direct ($50+ each), $100 deposit, 10 team","1. Navigate to /user/salary
+2. Click 'Apply for Program'
+3. Confirm application",Application created with 'active' status,High
+MSP-003,Application,Application creates baseline snapshot,Application records baseline stats at time of apply,"User applying with 60 team, 5 direct","1. Submit application
+2. Check salary_applications table","baseline_team_count=60, baseline_direct_count=5, current_target_team=81 (60*1.35)",Critical
+MSP-004,Application,Monthly target calculated correctly,35% team growth target set on application,"User has 60 team members at application","1. Apply
+2. Check current_target_team",current_target_team = 81 (ceil of 60 * 1.35),Critical
+MSP-005,Application,New direct target always 3,Monthly new direct referrals target is fixed at 3,"User applying for program","1. Apply
+2. Check current_target_direct_new",current_target_direct_new = 3,High
+MSP-006,Application,One active application per user,User cannot have multiple active applications,"User already has active application","1. Try to apply again",Error: Already have an active application,High
+MSP-007,Application,Admin can view all applications,Admin sees list of all salary applications,"Multiple users have applied","1. Navigate to /admin/salary/applications
+2. Check list",All applications shown with status/stage/dates,High
+MSP-008,Evaluation,Auto-evaluation at month end,System evaluates all active applications monthly,"Active application exists, period end reached","1. Run: php artisan salary:evaluate
+2. Check evaluations table",New evaluation record created for application,Critical
+MSP-009,Evaluation,Pass evaluation - both targets met,User meets team growth AND new direct targets,"Baseline: 60 team, target 81 team, target 3 new direct; Current: 85 team, 8 direct (was 5)","1. Run evaluation command",Evaluation created with passed=true,Critical
+MSP-010,Evaluation,Fail evaluation - team not met,User fails if team growth target not reached,"Target: 81 team; Current: 75 team","1. Run evaluation command","Evaluation created with passed=false, details show team not met",High
+MSP-011,Evaluation,Fail evaluation - direct not met,User fails if new direct referrals not reached,"Target: 3 new direct; User gained only 2 new direct","1. Run evaluation command","Evaluation created with passed=false, details show direct not met",High
+MSP-012,Evaluation,Fail evaluation - both not met,User fails when both targets missed,"Missed both team and direct targets","1. Run evaluation command","Evaluation created with passed=false, both failures recorded",High
+MSP-013,Evaluation,Evaluation records actual achievements,Evaluation stores what user actually achieved,"Target: 81 team, 3 new direct; Achieved: 90 team, 5 new direct","1. Run evaluation
+2. Check evaluation record","achieved_team_count=90, achieved_direct_new=5",High
+MSP-014,Evaluation,Idempotent evaluation,Cannot create duplicate evaluation for same period,"Evaluation already exists for current period","1. Run evaluation command again","Error or skip: Evaluation already exists for this period",Critical
+MSP-015,Evaluation,Dry-run option,Admin can preview evaluations without saving,"php artisan salary:evaluate --dry-run","1. Run with --dry-run flag
+2. Check database",No new evaluations created but output shows results,Medium
+MSP-016,Evaluation,Starting direct count rolls over,New direct count uses previous evaluation ending count,"Month 1: started with 5, ended with 9; Month 2 evaluation","1. Complete Month 1 evaluation (5→9, gained 4)
+2. Month 2: user has 11 direct now
+3. Run Month 2 evaluation",Month 2 calculates: 11 - 9 = 2 new direct (not 11-5),Critical
+MSP-017,Approval,Admin sees pending approvals,Passed evaluations appear in pending approval list,"User passed evaluation, not yet paid","1. Navigate to /admin/salary/evaluations
+2. Check pending approval count",Evaluation shows with 'Approve & Pay' button,High
+MSP-018,Approval,Approve and pay single evaluation,Admin can approve and pay individual evaluation,"Passed evaluation exists","1. Click 'Approve & Pay' button
+2. Confirm payment",Evaluation marked paid_at, user wallet credited,Critical
+MSP-019,Approval,Bulk approve and pay,Admin can approve multiple evaluations at once,"Multiple passed evaluations exist","1. Select multiple evaluations
+2. Click 'Bulk Approve'",All selected marked paid, wallets credited,High
+MSP-020,Approval,Payment creates transaction,Salary payment creates proper transaction record,"Admin approves payment","1. Approve payment
+2. Check user transactions","Transaction type='salary', amount matches stage salary",High
+MSP-021,Approval,Approved by admin tracked,System records which admin approved payment,"Admin approves payment","1. Approve payment
+2. Check evaluation record",approved_by field contains admin user ID,High
+MSP-022,Approval,Cannot approve failed evaluation,Failed evaluations cannot be approved for payment,"Evaluation with passed=false","1. Check evaluation list
+2. Look for approve button",No approve button shown for failed evaluations,High
+MSP-023,Approval,Cannot double-pay evaluation,Already paid evaluation cannot be paid again,"Evaluation already has paid_at set","1. Check evaluation
+2. Try to pay again",No approve button or error if attempted,Critical
+MSP-024,Stage Progression,Pass advances to next month,Passing evaluation sets up next month targets,"User passes Month 1 evaluation","1. Pass evaluation
+2. Check application status","months_completed=1, new period dates set, new targets calculated",High
+MSP-025,Stage Progression,Next month target based on current team,New month target = current team * 1.35,"Month 1 ended with 85 team","1. Pass Month 1
+2. Check Month 2 targets",current_target_team = 115 (ceil of 85 * 1.35),Critical
+MSP-026,Stage Progression,Stage promotion check,User promoted to next stage after qualifying,"Completed required months for Stage 1","1. Meet all stage completion criteria
+2. Run evaluation/promotion check","Stage advanced, salary_stage_id updated",High
+MSP-027,Stage Progression,Sequential stage required,Cannot skip stages,"User meets Stage 3 requirements but on Stage 1","1. Check stage progression logic",Must complete Stage 1 and 2 first,Critical
+MSP-028,Failure,Failed evaluation marks application failed,Failing an evaluation ends the application,"User fails monthly evaluation","1. Fail evaluation
+2. Check application status","Application status='failed', can reapply when eligible",High
+MSP-029,Failure,User notified on failure,User receives notification when evaluation fails,"Evaluation marked as failed","1. Fail evaluation
+2. Check user notifications",Notification sent about failure with details,Medium
+MSP-030,Failure,Can reapply after failure,User can submit new application after failure,"Previous application failed, user still meets Stage 1 requirements","1. Navigate to /user/salary
+2. Apply for program again",New application created successfully,High
+MSP-031,User View,Progress dashboard shows targets,User can see current month targets and progress,"User has active application","1. Navigate to /user/salary",Shows: Target team, current team, target new direct, current new direct,High
+MSP-032,User View,Progress percentage displayed,User sees percentage towards each target,"Target: 81 team, current: 65 team","1. Check progress display",Shows 80% progress towards team target (65/81),Medium
+MSP-033,User View,Evaluation history visible,User can see past evaluation results,"User has completed evaluations","1. Navigate to /user/salary
+2. Check evaluation history section",All past evaluations shown with pass/fail and details,Medium
+MSP-034,User View,Payment history visible,User can see salary payments received,"User received salary payments","1. Navigate to /user/salary
+2. Check payments section",All payments shown with dates and amounts,Medium
+MSP-035,Admin View,Evaluations page shows stats,Top cards show evaluation statistics,"Multiple evaluations exist","1. Navigate to /admin/salary/evaluations
+2. Check stats cards","Total, Passed, Failed, Total Paid, Pending Approval shown",High
+MSP-036,Admin View,Filter evaluations by status,Admin can filter by passed/failed/paid,"Various evaluations exist","1. Use filter dropdowns
+2. Apply filters",List shows only matching evaluations,Medium
+MSP-037,Admin View,Search evaluations by user,Admin can search by username/email,"Evaluations for user 'johnsmith' exist","1. Enter 'johnsmith' in search
+2. Apply filter",Only johnsmith evaluations shown,Medium
+MSP-038,Admin View,Run evaluation manually,Admin can trigger evaluation manually,"Active applications exist, mid-month","1. Navigate to /admin/salary/evaluations
+2. Click 'Run Evaluation' button",New evaluations created for all active applications,High
+MSP-039,Admin View,View user salary progress,Admin can view individual user progress,"User has active application","1. Click 'View Progress' for user
+2. Check progress page","Shows all user stats, targets, evaluation history",Medium
+MSP-040,Notifications,Eligible user notified,Users notified when they become eligible,"php artisan salary:notify-eligible runs at month start","1. Run notification command
+2. Check notifications",Eligible users receive notification about program,Medium
+MSP-041,Notifications,Payment notification sent,User notified when salary is paid,"Admin approves payment","1. Approve payment
+2. Check user notifications",Notification confirms salary payment with amount,Medium
+MSP-042,Notifications,Failure notification sent,User notified when evaluation fails,"Evaluation fails","1. Run evaluation resulting in failure
+2. Check notifications",Notification explains failure reason,Medium
+MSP-043,RBAC,salary.view permission required,Cannot access without salary.view permission,"Admin without salary.view permission","1. Navigate to /admin/salary",403 Access Denied,High
+MSP-044,RBAC,salary.manage for approvals,Cannot approve payments without salary.manage,"Admin with salary.view only","1. Try to approve payment",403 or action not available,High
+MSP-045,Edge Case,$50 minimum investment filter,Referral must have $50+ investment to count,"User has 5 direct but only 3 have $50+ investments","1. Check qualification
+2. Apply for program",Only 3 counted as direct members,High
+MSP-046,Edge Case,Exact minimum requirements,User with exactly minimum requirements qualifies,"3 direct (exactly $50 each), exactly $100 deposit, exactly 10 team","1. Check eligibility",User is eligible and can apply,Medium
+MSP-047,Edge Case,Zero team growth month,Handle user with 0 team members at start,"Unlikely but possible: 0 baseline team","1. Check target calculation",Target = ceil(0 * 1.35) = 0 (trivially met),Low
+MSP-048,Edge Case,Large team calculations,System handles large numbers correctly,"User has 10000 team members","1. Calculate 35% growth target",Target = 13500 calculated correctly without overflow,Low
+MSP-049,Wallet,Correct wallet credited,Salary goes to main wallet,"User has multiple wallet types","1. Approve payment
+2. Check wallet balances",Main/USDT wallet credited (configurable),High
+MSP-050,Wallet,Balance updated correctly,Wallet balance reflects payment,"User had $100, receives $200 salary","1. Approve payment
+2. Check balance",Balance = $300,High
+MSP-051,History,Admin history shows all payments,Payment history page shows all completed payments,"Multiple payments made","1. Navigate to /admin/salary/history",All paid evaluations listed with user/stage/amount/date,Medium
+MSP-052,History,Export functionality,Admin can export payment history,"Payments exist","1. Click Export CSV",CSV downloads with all records,Low
+MSP-053,Index Page,Stats cards show correct data,Index page shows program overview,"Applications and evaluations exist","1. Navigate to /admin/salary","Active Applications, Pending Evaluations, Total Paid counts correct",High
+MSP-054,Index Page,Quick links work,Navigation links on index work correctly,"Admin on salary index","1. Click each quick link",Each navigates to correct page,Medium
+MSP-055,Multi-Stage,Stage 2 higher requirements,Stage 2 has higher thresholds than Stage 1,"Stage 2 configured: 5 direct, $200 deposit, 25 team, $400 salary","1. Check user eligibility for Stage 2",Correct requirements checked,High
+MSP-056,Multi-Stage,Salary amount matches stage,Payment amount matches current stage salary,"User on Stage 2 ($400 salary)","1. Approve evaluation payment",Transaction and wallet show $400,High

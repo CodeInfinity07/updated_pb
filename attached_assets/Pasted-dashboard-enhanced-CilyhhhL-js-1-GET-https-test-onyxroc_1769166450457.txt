@@ -1,0 +1,38 @@
+dashboard.enhanced-CilyhhhL.js:1  GET https://test.onyxrock.org/dashboard/api/balance 403 (Forbidden)
+fetchData @ dashboard.enhanced-CilyhhhL.js:1
+updateBalances @ dashboard.enhanced-CilyhhhL.js:1
+refreshDashboard @ dashboard.enhanced-CilyhhhL.js:1
+(anonymous) @ dashboard.enhanced-CilyhhhL.js:1Understand this error
+dashboard.enhanced-CilyhhhL.js:1 Balance update failed: Error: HTTP 403: 
+    at n.fetchData (dashboard.enhanced-CilyhhhL.js:1:3274)
+    at async n.updateBalances (dashboard.enhanced-CilyhhhL.js:1:2555)
+    at async Promise.all (index 0)
+    at async n.refreshDashboard (dashboard.enhanced-CilyhhhL.js:1:1657)
+updateBalances @ dashboard.enhanced-CilyhhhL.js:1
+await in updateBalances
+refreshDashboard @ dashboard.enhanced-CilyhhhL.js:1
+(anonymous) @ dashboard.enhanced-CilyhhhL.js:1Understand this error
+dashboard.enhanced-CilyhhhL.js:1  GET https://test.onyxrock.org/dashboard/api/activity?limit=10 403 (Forbidden)
+fetchData @ dashboard.enhanced-CilyhhhL.js:1
+updateRecentTransactions @ dashboard.enhanced-CilyhhhL.js:1
+refreshDashboard @ dashboard.enhanced-CilyhhhL.js:1
+(anonymous) @ dashboard.enhanced-CilyhhhL.js:1Understand this error
+dashboard.enhanced-CilyhhhL.js:1 Transactions update failed: Error: HTTP 403: 
+    at n.fetchData (dashboard.enhanced-CilyhhhL.js:1:3274)
+    at async n.updateRecentTransactions (dashboard.enhanced-CilyhhhL.js:1:2731)
+    at async Promise.all (index 1)
+    at async n.refreshDashboard (dashboard.enhanced-CilyhhhL.js:1:1657)
+updateRecentTransactions @ dashboard.enhanced-CilyhhhL.js:1
+await in updateRecentTransactions
+refreshDashboard @ dashboard.enhanced-CilyhhhL.js:1
+(anonymous) @ dashboard.enhanced-CilyhhhL.js:1Understand this error
+dashboard.enhanced-CilyhhhL.js:1  GET https://test.onyxrock.org/dashboard/api/referrals 403 (Forbidden)
+fetchData @ dashboard.enhanced-CilyhhhL.js:1
+updateReferralStats @ dashboard.enhanced-CilyhhhL.js:1
+refreshDashboard @ dashboard.enhanced-CilyhhhL.js:1
+(anonymous) @ dashboard.enhanced-CilyhhhL.js:1Understand this error
+dashboard.enhanced-CilyhhhL.js:1 Referral stats update failed: Error: HTTP 403: 
+    at n.fetchData (dashboard.enhanced-CilyhhhL.js:1:3274)
+    at async n.updateReferralStats (dashboard.enhanced-CilyhhhL.js:1:2951)
+    at async Promise.all (index 2)
+    at async n.refreshDashboard (dashboard.enhanced-CilyhhhL.js:1:1657)

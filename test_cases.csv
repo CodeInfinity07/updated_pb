@@ -1,0 +1,283 @@
+Test ID,Module,Feature,Test Case,Pre-conditions,Test Steps,Expected Result,Priority,Status
+TC-001,Authentication,User Registration,Verify new user can register with valid details,None,"1. Navigate to registration page
+2. Enter valid name, email, password
+3. Accept terms and conditions
+4. Click Register button",User account created successfully and redirected to dashboard,High,
+TC-002,Authentication,User Registration,Verify registration fails with existing email,Existing user with test@email.com,"1. Navigate to registration page
+2. Enter existing email address
+3. Fill other required fields
+4. Click Register",Error message: Email already exists,High,
+TC-003,Authentication,User Registration,Verify registration fails with invalid email format,None,"1. Navigate to registration page
+2. Enter invalid email (e.g., 'invalid-email')
+3. Fill other fields
+4. Click Register",Validation error for email field,Medium,
+TC-004,Authentication,User Registration,Verify password strength validation,None,"1. Navigate to registration page
+2. Enter weak password (e.g., '123')
+3. Fill other fields
+4. Click Register",Error message about password requirements,Medium,
+TC-005,Authentication,User Login,Verify user can login with valid credentials,Existing user account,"1. Navigate to login page
+2. Enter valid email and password
+3. Click Login button",User logged in and redirected to dashboard,High,
+TC-006,Authentication,User Login,Verify login fails with incorrect password,Existing user account,"1. Navigate to login page
+2. Enter valid email with wrong password
+3. Click Login",Error message: Invalid credentials,High,
+TC-007,Authentication,User Login,Verify login fails with non-existent email,None,"1. Navigate to login page
+2. Enter non-registered email
+3. Enter any password
+4. Click Login",Error message: Invalid credentials,Medium,
+TC-008,Authentication,Two-Factor Auth,Verify 2FA setup process,Logged in user without 2FA,"1. Go to profile settings
+2. Click Enable 2FA
+3. Scan QR code with authenticator app
+4. Enter verification code
+5. Submit",2FA enabled successfully with recovery codes displayed,High,
+TC-009,Authentication,Two-Factor Auth,Verify login with 2FA enabled,User with 2FA enabled,"1. Login with email/password
+2. Enter valid 2FA code from authenticator
+3. Submit",User logged in successfully,High,
+TC-010,Authentication,Two-Factor Auth,Verify login fails with invalid 2FA code,User with 2FA enabled,"1. Login with email/password
+2. Enter invalid 2FA code
+3. Submit",Error message: Invalid verification code,High,
+TC-011,Authentication,Password Reset,Verify password reset email sent,Existing user account,"1. Click Forgot Password
+2. Enter registered email
+3. Submit",Password reset email sent confirmation,Medium,
+TC-012,Authentication,Logout,Verify user can logout successfully,Logged in user,"1. Click user avatar/menu
+2. Click Logout",User logged out and redirected to login page,High,
+TC-013,User Profile,Profile Update,Verify user can update profile information,Logged in user,"1. Go to profile settings
+2. Update name and other fields
+3. Save changes",Profile updated successfully message,Medium,
+TC-014,User Profile,Avatar Upload,Verify user can upload profile picture,Logged in user,"1. Go to profile settings
+2. Click upload avatar
+3. Select valid image file
+4. Save",Avatar updated and displayed correctly,Low,
+TC-015,KYC,Document Upload,Verify user can upload KYC documents (manual mode),Logged in user with KYC not verified,"1. Go to KYC verification
+2. Upload front ID document
+3. Upload back ID document
+4. Upload selfie
+5. Submit",Documents uploaded and status changed to pending,High,
+TC-016,KYC,Document Validation,Verify invalid file types rejected for KYC,Logged in user,"1. Go to KYC verification
+2. Try to upload non-image file (e.g., PDF)
+3. Submit",Error message: Invalid file type,Medium,
+TC-017,KYC,Admin Review,Verify admin can approve KYC submission,Admin user with pending KYC submissions,"1. Login as admin
+2. Go to KYC management
+3. View pending submission
+4. Click Approve",KYC status updated to verified for user,High,
+TC-018,KYC,Admin Review,Verify admin can reject KYC submission with reason,Admin user with pending KYC submissions,"1. Login as admin
+2. Go to KYC management
+3. View pending submission
+4. Enter rejection reason
+5. Click Reject",KYC status updated to rejected with reason,High,
+TC-019,Investments,View Plans,Verify user can view available investment plans,Logged in user,"1. Navigate to investments page
+2. View available plans",All active investment plans displayed with details,High,
+TC-020,Investments,Purchase Plan,Verify user can purchase investment plan,Logged in user with sufficient wallet balance,"1. Go to investment plans
+2. Select a plan
+3. Enter investment amount
+4. Confirm purchase",Investment created successfully and wallet debited,High,
+TC-021,Investments,Purchase Plan,Verify investment fails with insufficient balance,Logged in user with low wallet balance,"1. Go to investment plans
+2. Select a plan
+3. Enter amount exceeding balance
+4. Confirm",Error message: Insufficient balance,High,
+TC-022,Investments,ROI Calculation,Verify daily ROI credited correctly for fixed plans,User with active fixed ROI investment,"1. Wait for daily ROI processing
+2. Check wallet balance
+3. Verify transaction history",ROI amount credited matching plan percentage,High,
+TC-023,Investments,ROI Calculation,Verify variable ROI calculated consistently,Multiple users with same variable ROI plan,"1. Wait for daily ROI processing
+2. Compare ROI percentage for all users",Same ROI percentage applied to all users for same plan on same day,High,
+TC-024,Investments,Package Expiry,Verify investment expires at 3x cap,User with investment nearing 3x earnings,"1. Monitor investment earnings
+2. Wait until total earnings reach 3x base",Investment marked as expired when cap reached,High,
+TC-025,Investments,Package Expiry,Verify 6x cap for qualified referrers,Qualified referrer with oldest active package,"1. Check qualification status
+2. Monitor earnings on oldest package",6x cap applied instead of 3x for qualified referrers,Medium,
+TC-026,Investments,Bot Fee,Verify $10 bot fee on first package only,New user making first investment,"1. User purchases first investment
+2. Check deductions",Bot fee of $10 deducted from first package only,Medium,
+TC-027,Referrals,Referral Link,Verify referral link generation,Logged in user,"1. Go to referrals page
+2. Copy referral link",Unique referral link displayed and copyable,High,
+TC-028,Referrals,Direct Sponsor Commission,Verify 8% commission on new investment,User with referral who makes investment,"1. Referral makes investment of $100
+2. Check sponsor wallet",8% ($8) commission credited to sponsor immediately,High,
+TC-029,Referrals,Multi-Level Commission,Verify ROI-based commissions up to 10 levels,User with 10+ level downline structure,"1. Downline earns daily ROI
+2. Check upline wallets at each level",Commission percentages credited per level configuration,High,
+TC-030,Referrals,Referral Tree,Verify referral tree visualization,User with multiple levels of referrals,"1. Go to referral tree page
+2. Expand tree nodes",Tree structure displayed correctly with all levels,Medium,
+TC-031,Wallets,View Balance,Verify user can view wallet balances,Logged in user with wallet,"1. Navigate to wallets page
+2. View balance summary",All wallet balances displayed correctly,High,
+TC-032,Wallets,Deposit,Verify user can generate deposit address,Logged in user,"1. Go to deposit page
+2. Select cryptocurrency
+3. Generate address",Unique deposit address displayed,High,
+TC-033,Wallets,Withdrawal,Verify user can submit withdrawal request,Logged in user with sufficient balance,"1. Go to withdrawal page
+2. Enter amount and destination address
+3. Submit request",Withdrawal request created with pending status,High,
+TC-034,Wallets,Withdrawal,Verify withdrawal fails with insufficient balance,Logged in user with low balance,"1. Go to withdrawal page
+2. Enter amount exceeding balance
+3. Submit",Error message: Insufficient balance,High,
+TC-035,Wallets,Withdrawal,Verify admin can approve withdrawal,Admin with pending withdrawals,"1. Login as admin
+2. Go to pending withdrawals
+3. Approve withdrawal",Withdrawal status updated to approved,High,
+TC-036,Wallets,Withdrawal,Verify admin can reject withdrawal,Admin with pending withdrawals,"1. Login as admin
+2. Go to pending withdrawals
+3. Enter rejection reason
+4. Reject withdrawal",Withdrawal status updated to rejected,High,
+TC-037,Support,Create Ticket,Verify user can create support ticket,Logged in user,"1. Go to support page
+2. Click create ticket
+3. Enter subject and message
+4. Submit",Ticket created with pending status,Medium,
+TC-038,Support,View Tickets,Verify user can view their tickets,User with existing tickets,"1. Go to support page
+2. View ticket list",All user tickets displayed with status,Medium,
+TC-039,Support,Reply to Ticket,Verify user can reply to open ticket,User with open support ticket,"1. Open existing ticket
+2. Enter reply message
+3. Submit",Reply added to ticket thread,Medium,
+TC-040,Support,Admin Reply,Verify admin can respond to ticket,Admin with open tickets,"1. Login as admin
+2. Go to support management
+3. Open ticket
+4. Enter response
+5. Submit",Response added and user notified,Medium,
+TC-041,Support,Close Ticket,Verify admin can close ticket,Admin with open tickets,"1. Login as admin
+2. Open ticket
+3. Change status to closed",Ticket status updated to closed,Low,
+TC-042,FAQ,View FAQ,Verify user can view FAQ section,None,"1. Navigate to FAQ page
+2. Browse questions",FAQ questions and answers displayed,Low,
+TC-043,FAQ,Admin Create,Verify admin can create FAQ entry,Admin user,"1. Login as admin
+2. Go to FAQ management
+3. Create new FAQ
+4. Save",New FAQ entry created and visible,Low,
+TC-044,Leaderboards,View Leaderboard,Verify user can view active leaderboards,Active leaderboard exists,"1. Navigate to leaderboards page
+2. View current rankings",Leaderboard displayed with user rankings,Medium,
+TC-045,Leaderboards,Competitive Type,Verify ranking-based prize distribution,Completed competitive leaderboard,"1. Wait for leaderboard to complete
+2. Check prize distribution",Prizes distributed based on final rankings,High,
+TC-046,Leaderboards,Target Type,Verify goal achievement prize distribution,Completed target leaderboard with achievers,"1. Wait for leaderboard to complete
+2. Check prize distribution for goal achievers",Fixed prize distributed to all who met target,High,
+TC-047,Leaderboards,Referral Counting,Verify direct referrals only mode,Leaderboard with direct referrals setting,"1. User refers new users
+2. Check leaderboard count",Only level 1 referrals counted,Medium,
+TC-048,Leaderboards,Referral Counting,Verify multi-level referral counting,Leaderboard with multi-level setting (depth 5),"1. Users refer at multiple levels
+2. Check leaderboard count",Referrals counted up to configured depth,Medium,
+TC-049,Leaderboards,Admin Create,Verify admin can create leaderboard,Admin user,"1. Login as admin
+2. Go to leaderboard management
+3. Create new leaderboard with prizes
+4. Save",Leaderboard created and activated,Medium,
+TC-050,Announcements,View Announcement,Verify user sees active announcement popup,Active announcement exists,"1. Login as user
+2. Dashboard loads",Announcement modal displayed to user,Medium,
+TC-051,Announcements,Text Type,Verify text announcement displays correctly,Text announcement active,"1. Login as user
+2. View announcement",Text content displayed with proper formatting,Low,
+TC-052,Announcements,Image Type,Verify image announcement displays correctly,Image announcement active,"1. Login as user
+2. View announcement",Image displayed with optional text,Low,
+TC-053,Announcements,Dismiss,Verify dismissible announcement can be closed,Dismissible announcement active,"1. View announcement
+2. Click close/dismiss",Announcement closed and not shown again,Low,
+TC-054,Announcements,Admin Create,Verify admin can create announcement,Admin user,"1. Login as admin
+2. Go to announcements
+3. Create new announcement
+4. Set target audience
+5. Save",Announcement created and visible to target users,Medium,
+TC-055,Admin Dashboard,View Stats,Verify admin can view dashboard statistics,Admin user,"1. Login as admin
+2. View dashboard",Statistics displayed (users, investments, revenue),High,
+TC-056,Admin Dashboard,Analytics,Verify charts and graphs load correctly,Admin user,"1. Login as admin
+2. View dashboard charts",Charts render with accurate data,Medium,
+TC-057,Admin Users,View Users,Verify admin can view user list,Admin with users.view permission,"1. Login as admin
+2. Go to user management",User list displayed with details,High,
+TC-058,Admin Users,Search Users,Verify admin can search users,Admin user,"1. Go to user management
+2. Enter search term
+3. Search",Matching users displayed,Medium,
+TC-059,Admin Users,Edit User,Verify admin can edit user details,Admin with users.edit permission,"1. Go to user management
+2. Select user
+3. Edit details
+4. Save",User details updated,High,
+TC-060,Admin Users,Block User,Verify admin can block user,Admin with users.block permission,"1. Go to user management
+2. Select user
+3. Click Block",User blocked and cannot login,High,
+TC-061,Admin Users,Unblock User,Verify admin can unblock user,Blocked user exists,"1. Go to blocked users
+2. Select user
+3. Click Unblock",User unblocked and can login,Medium,
+TC-062,RBAC,Role Creation,Verify admin can create new role,Admin with roles.manage permission,"1. Go to roles management
+2. Create new role
+3. Assign permissions
+4. Save",New role created with permissions,High,
+TC-063,RBAC,Role Assignment,Verify admin can assign role to staff,Admin with roles.manage permission,"1. Go to staff management
+2. Select user
+3. Assign admin role
+4. Save",Role assigned to user,High,
+TC-064,RBAC,Permission Check,Verify staff without permission denied access,Staff with limited permissions,"1. Login as limited staff
+2. Try to access restricted feature",Access denied message displayed,High,
+TC-065,RBAC,Super Admin,Verify Super Admin bypasses all permission checks,Super Admin user,"1. Login as Super Admin
+2. Access all admin features",All features accessible without restrictions,High,
+TC-066,RBAC,System Role Protection,Verify system roles cannot be deleted,Admin user,"1. Go to roles management
+2. Try to delete system role",Delete action blocked or hidden,Medium,
+TC-067,Dummy Users,Mark as Dummy,Verify admin can mark user as dummy,Admin user,"1. Go to dummy users management
+2. Select user
+3. Mark as dummy",User marked as dummy with restrictions applied,Low,
+TC-068,Dummy Users,Restrictions,Verify dummy user restrictions work,Dummy user with withdraw disabled,"1. Login as dummy user
+2. Try to withdraw",Withdrawal blocked per restriction settings,Low,
+TC-069,Impersonation,Start Impersonation,Verify admin can impersonate user,Admin with users.impersonate permission,"1. Go to impersonation
+2. Search for user
+3. Start impersonation",Admin views app as the impersonated user,High,
+TC-070,Impersonation,End Impersonation,Verify admin can end impersonation,Admin currently impersonating,"1. Click end impersonation button",Returns to admin view,High,
+TC-071,Email,Mass Email,Verify admin can send mass email,Admin with email.manage permission,"1. Go to mass email
+2. Select recipients
+3. Compose email
+4. Send",Emails queued and sent to recipients,Medium,
+TC-072,Email,Email Templates,Verify admin can manage email templates,Admin with email.settings permission,"1. Go to email templates
+2. Edit template
+3. Save",Template updated,Low,
+TC-073,Push Notifications,Send Notification,Verify admin can send push notification,Admin with push.send permission,"1. Go to push notifications
+2. Select recipients
+3. Enter message
+4. Send",Notification sent to selected users,Medium,
+TC-074,Settings,System Settings,Verify admin can update system settings,Admin with settings.manage permission,"1. Go to system settings
+2. Update settings
+3. Save",Settings updated and applied,Medium,
+TC-075,Settings,Cryptocurrency Management,Verify admin can manage cryptocurrencies,Admin with settings.manage permission,"1. Go to cryptocurrency settings
+2. Add/edit cryptocurrency
+3. Save",Cryptocurrency configuration updated,Medium,
+TC-076,Settings,Commission Settings,Verify admin can update commission rates,Admin with commission.manage permission,"1. Go to commission settings
+2. Update level percentages
+3. Save",Commission rates updated,High,
+TC-077,Reports,Login Reports,Verify admin can view login reports,Admin with analytics.view permission,"1. Go to reports
+2. View login activity",Login history displayed with details,Low,
+TC-078,Reports,Export Data,Verify admin can export data,Admin with analytics.export permission,"1. Go to reports
+2. Select data type
+3. Export",CSV/Excel file downloaded,Low,
+TC-079,CRM,View Leads,Verify admin can view CRM leads,Admin with crm.view permission,"1. Go to CRM
+2. View leads list",Leads displayed with status,Low,
+TC-080,CRM,Manage Leads,Verify admin can manage leads,Admin with crm.manage permission,"1. Go to CRM
+2. Update lead status
+3. Add follow-up",Lead updated successfully,Low,
+TC-081,Tracking Pixels,Configure Pixels,Verify admin can configure tracking pixels,Admin with settings.manage permission,"1. Go to tracking pixels
+2. Add pixel code
+3. Save",Pixel code saved and active,Low,
+TC-082,Investment Plans,Create Plan,Verify admin can create investment plan,Admin with investments.manage permission,"1. Go to investment plans
+2. Create new plan
+3. Set ROI and duration
+4. Save",Investment plan created and active,High,
+TC-083,Investment Plans,Edit Plan,Verify admin can edit investment plan,Admin with investments.manage permission,"1. Go to investment plans
+2. Edit existing plan
+3. Save changes",Investment plan updated,Medium,
+TC-084,Investment Plans,Toggle Status,Verify admin can enable/disable plan,Admin with investments.manage permission,"1. Go to investment plans
+2. Toggle plan status",Plan status changed (active/inactive),Medium,
+TC-085,Security,Session Management,Verify session timeout works,Logged in user,"1. Login
+2. Wait for session timeout
+3. Try to access protected page",Redirected to login page,Medium,
+TC-086,Security,CSRF Protection,Verify CSRF tokens validated,Any user,"1. Submit form without valid CSRF token",Request rejected with error,High,
+TC-087,Security,XSS Prevention,Verify user input sanitized,Logged in user,"1. Enter script tag in form field
+2. Submit",Script not executed - input sanitized,High,
+TC-088,UI,Responsive Design,Verify mobile responsiveness,Any user on mobile device,"1. Access site on mobile
+2. Navigate through pages",All pages display correctly on mobile,Medium,
+TC-089,UI,Dark Mode,Verify dark mode toggle works,Any user,"1. Click theme toggle
+2. Observe UI",Theme switches between light and dark,Low,
+TC-090,UI,Navigation,Verify sidebar navigation works,Logged in user,"1. Click sidebar menu items
+2. Navigate through sections",All navigation links work correctly,High,
+TC-091,Maintenance Mode,Enable Maintenance,Verify admin can enable maintenance mode,Admin with settings.manage permission,"1. Go to maintenance settings
+2. Enable maintenance mode",Site shows maintenance page to regular users,Medium,
+TC-092,Maintenance Mode,Admin Access,Verify admin can access during maintenance,Maintenance mode enabled,"1. Login as admin
+2. Access admin panel",Admin can access site normally,Medium,
+TC-093,Expiry Settings,Configure Expiry,Verify admin can configure expiry settings,Admin user,"1. Go to expiry settings
+2. Update multiplier values
+3. Save",Expiry settings updated,Medium,
+TC-094,Transactions,View History,Verify user can view transaction history,User with transactions,"1. Go to transactions/wallet
+2. View history",All transactions displayed with details,High,
+TC-095,Transactions,Filter,Verify transaction filtering works,User with multiple transaction types,"1. Go to transactions
+2. Apply filters (date, type)
+3. Search",Filtered results displayed,Medium,
+TC-096,Admin Finance,Pending Withdrawals,Verify admin sees pending withdrawal count,Admin user,"1. Login as admin
+2. View dashboard/finance",Pending withdrawal count displayed,High,
+TC-097,Admin Finance,Bulk Actions,Verify admin can perform bulk actions,Admin with appropriate permissions,"1. Go to finance section
+2. Select multiple items
+3. Apply bulk action",Action applied to all selected items,Medium,
+TC-098,Social Sharing,Leaderboard Share,Verify leaderboard sharing works,Active leaderboard,"1. View leaderboard
+2. Click share button",Share dialog with link appears,Low,
+TC-099,Validation,Email Validation,Verify email format validation across forms,Any user,"1. Enter invalid email in any form
+2. Submit",Validation error for email field,Medium,
+TC-100,Validation,Amount Validation,Verify numeric amount validation,Logged in user,"1. Enter non-numeric value in amount field
+2. Submit",Validation error for amount field,Medium,

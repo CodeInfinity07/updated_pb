@@ -1,0 +1,49 @@
+modules = ["php-8.2", "nodejs-20", "web", "postgresql-16"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+packages = ["mysql80"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Laravel Application"
+
+[[workflows.workflow]]
+name = "Laravel Application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "php artisan serve --host=0.0.0.0 --port=5000"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["php", "artisan", "serve", "--host=0.0.0.0", "--port=5000"]
+build = ["composer", "install", "--no-dev", "--optimize-autoloader"]
+
+[userenv]
+
+[userenv.shared]
+DB_CONNECTION = "mysql"
+DB_PORT = "3306"
+VAPID_PUBLIC_KEY = "BOFughS7cyuSpRBbXDNcYCBu5hFFM5_C-VmSbDew7hH80MA4ZPISnEUq2OC9fn_V8P1Dh298v19KPhJI_nRMhrc"
+VAPID_PRIVATE_KEY = "Vs-eRdmIW1bEHflVbK4auMlx3G7xkasxvcFDl-dpmWo"
+VAPID_SUBJECT = "mailto:support@onyxrock.org"
