@@ -393,6 +393,14 @@
                     <span class="nav-text"> Commission Rules </span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('admin.referrals.simulator.index') }}">
+                    <span class="nav-icon">
+                        <iconify-icon icon="mdi:calculator-variant"></iconify-icon>
+                    </span>
+                    <span class="nav-text"> ROI Simulator </span>
+                </a>
+            </li>
             @endif
             @endif
 

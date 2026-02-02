@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\AdminFaqController;
 use App\Http\Controllers\Admin\AdminImpersonationController;
 use App\Http\Controllers\Admin\AdminCommissionController;
+use App\Http\Controllers\Admin\AdminCommissionSimulatorController;
 use App\Http\Controllers\Admin\AdminExpirySettingsController;
 use App\Http\Controllers\Admin\AdminMassEmailController;
 use App\Http\Controllers\Admin\AdminAnnouncementsController;
@@ -707,6 +708,13 @@ Route::middleware('auth', '2fa', 'password.change')->group(function () {
                 Route::post('/seed-defaults', [AdminCommissionController::class, 'seedDefaults'])->name('seed-defaults');
                 Route::post('/calculate-preview', [AdminCommissionController::class, 'calculatePreview'])->name('calculate-preview');
                 Route::get('/export', [AdminCommissionController::class, 'export'])->name('export');
+            });
+
+            // Commission & ROI Simulator
+            Route::prefix('simulator')->name('simulator.')->group(function () {
+                Route::get('/', [AdminCommissionSimulatorController::class, 'index'])->name('index');
+                Route::post('/simulate', [AdminCommissionSimulatorController::class, 'simulate'])->name('simulate');
+                Route::get('/search-users', [AdminCommissionSimulatorController::class, 'searchUsers'])->name('search-users');
             });
         });
 
