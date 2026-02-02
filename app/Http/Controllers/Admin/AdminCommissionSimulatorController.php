@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserInvestment;
 use App\Models\InvestmentPlanTier;
+use App\Models\InvestmentPlanProfitSharing;
 use App\Models\ReferralCommissionLevel;
 use App\Models\CommissionSetting;
 use App\Models\Setting;
@@ -153,17 +154,30 @@ class AdminCommissionSimulatorController extends Controller
             ];
         }
 
-        $commissionLevels = ReferralCommissionLevel::where('is_active', true)
-            ->orderBy('level')
-            ->pluck('percentage', 'level')
-            ->toArray();
+        $activeInvestment = $user->investments->where('status', 'active')->first();
+        $profitSharingConfig = null;
+        $tierName = 'Unknown';
+        
+        if ($activeInvestment) {
+            $tier = InvestmentPlanTier::where('investment_plan_id', $activeInvestment->investment_plan_id)
+                ->where('tier_level', $activeInvestment->tier_level ?? 1)
+                ->first();
+            
+            if ($tier) {
+                $tierName = $tier->tier_name;
+                $profitSharingConfig = InvestmentPlanProfitSharing::where('investment_plan_tier_id', $tier->id)
+                    ->where('is_active', true)
+                    ->first();
+            }
+        }
 
-        if (empty($commissionLevels)) {
-            ReferralCommissionLevel::seedDefaults();
-            $commissionLevels = ReferralCommissionLevel::where('is_active', true)
-                ->orderBy('level')
-                ->pluck('percentage', 'level')
-                ->toArray();
+        $commissionLevels = [];
+        if ($profitSharingConfig) {
+            $commissionLevels = [
+                1 => (float) $profitSharingConfig->level_1_commission,
+                2 => (float) $profitSharingConfig->level_2_commission,
+                3 => (float) $profitSharingConfig->level_3_commission,
+            ];
         }
 
         $profitSharingShieldEnabled = Setting::getValue('profit_sharing_shield_enabled', false);
