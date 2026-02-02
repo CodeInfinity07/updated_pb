@@ -232,7 +232,7 @@ class Setting extends Model
                 'is_public' => true
             ],
             'support_email' => [
-                'value' => 'support@onyxrock.org',
+                'value' => 'noreply@predictionbot.net',
                 'type' => 'string',
                 'category' => 'general',
                 'description' => 'Support email address',

@@ -60,7 +60,7 @@ class SendMassEmailJob implements ShouldQueue
             );
 
             // Send the email with fallback from address
-            $fromAddress = config('mail.from.address') ?: env('MAIL_FROM_ADDRESS', 'support@onyxrock.org');
+            $fromAddress = config('mail.from.address') ?: env('MAIL_FROM_ADDRESS', 'noreply@predictionbot.net');
             $fromName = config('mail.from.name') ?: env('MAIL_FROM_NAME', 'OnyxRock');
             
             Mail::raw($processedContent, function ($message) use ($fromAddress, $fromName) {

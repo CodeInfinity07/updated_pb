@@ -1,4 +1,4 @@
-dashboard.enhanced-CilyhhhL.js:1  GET https://test.onyxrock.org/dashboard/api/balance 403 (Forbidden)
+dashboard.enhanced-CilyhhhL.js:1  GET https://test.predictionbot.net/dashboard/api/balance 403 (Forbidden)
 fetchData @ dashboard.enhanced-CilyhhhL.js:1
 updateBalances @ dashboard.enhanced-CilyhhhL.js:1
 refreshDashboard @ dashboard.enhanced-CilyhhhL.js:1
@@ -12,7 +12,7 @@ updateBalances @ dashboard.enhanced-CilyhhhL.js:1
 await in updateBalances
 refreshDashboard @ dashboard.enhanced-CilyhhhL.js:1
 (anonymous) @ dashboard.enhanced-CilyhhhL.js:1Understand this error
-dashboard.enhanced-CilyhhhL.js:1  GET https://test.onyxrock.org/dashboard/api/activity?limit=10 403 (Forbidden)
+dashboard.enhanced-CilyhhhL.js:1  GET https://test.predictionbot.net/dashboard/api/activity?limit=10 403 (Forbidden)
 fetchData @ dashboard.enhanced-CilyhhhL.js:1
 updateRecentTransactions @ dashboard.enhanced-CilyhhhL.js:1
 refreshDashboard @ dashboard.enhanced-CilyhhhL.js:1
@@ -26,7 +26,7 @@ updateRecentTransactions @ dashboard.enhanced-CilyhhhL.js:1
 await in updateRecentTransactions
 refreshDashboard @ dashboard.enhanced-CilyhhhL.js:1
 (anonymous) @ dashboard.enhanced-CilyhhhL.js:1Understand this error
-dashboard.enhanced-CilyhhhL.js:1  GET https://test.onyxrock.org/dashboard/api/referrals 403 (Forbidden)
+dashboard.enhanced-CilyhhhL.js:1  GET https://test.predictionbot.net/dashboard/api/referrals 403 (Forbidden)
 fetchData @ dashboard.enhanced-CilyhhhL.js:1
 updateReferralStats @ dashboard.enhanced-CilyhhhL.js:1
 refreshDashboard @ dashboard.enhanced-CilyhhhL.js:1

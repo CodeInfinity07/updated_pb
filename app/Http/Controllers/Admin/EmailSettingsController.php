@@ -548,7 +548,7 @@ class EmailSettingsController extends Controller
      */
     private function sendEmailMessage(string $recipient, string $subject, string $content)
     {
-        $fromAddress = config('mail.from.address') ?: env('MAIL_FROM_ADDRESS', 'support@onyxrock.org');
+        $fromAddress = config('mail.from.address') ?: env('MAIL_FROM_ADDRESS', 'noreply@predictionbot.net');
         $fromName = config('mail.from.name') ?: env('MAIL_FROM_NAME', 'OnyxRock');
         
         Mail::raw($content, function ($message) use ($recipient, $subject, $fromAddress, $fromName) {

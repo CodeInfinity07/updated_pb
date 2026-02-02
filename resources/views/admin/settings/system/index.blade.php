@@ -95,7 +95,7 @@
                                     <div class="col-md-6">
                                         <label for="support_email" class="form-label fw-semibold">Support Email <span class="text-danger">*</span></label>
                                         <input type="email" class="form-control" id="support_email" name="support_email" 
-                                               value="{{ getSetting('support_email', 'support@onyxrock.org') }}" required>
+                                               value="{{ getSetting('support_email', 'noreply@predictionbot.net') }}" required>
                                         <div class="form-text">Primary contact email for user support</div>
                                     </div>
 
