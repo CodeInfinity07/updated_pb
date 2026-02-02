@@ -39,6 +39,9 @@ import bootstrap from 'bootstrap/dist/js/bootstrap.min';
 
 window.bootstrap = bootstrap;
 
+// Dispatch event when Bootstrap is ready
+document.dispatchEvent(new CustomEvent('bootstrap:ready'));
+
 
 import Prism from 'prismjs';
 import NormalizeWhitespace from 'prismjs/plugins/normalize-whitespace/prism-normalize-whitespace.js'

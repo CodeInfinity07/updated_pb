@@ -777,14 +777,17 @@
 
 @section('script')
 <script>
-// Wait for Bootstrap to be available
-function waitForBootstrap(callback) {
-    if (typeof bootstrap !== 'undefined') {
-        callback();
-    } else {
-        setTimeout(() => waitForBootstrap(callback), 50);
-    }
-}
+// Bootstrap ready state
+let bootstrapReady = typeof bootstrap !== 'undefined';
+let pendingActions = [];
+
+// Listen for Bootstrap ready event
+document.addEventListener('bootstrap:ready', function() {
+    bootstrapReady = true;
+    // Execute any pending actions
+    pendingActions.forEach(fn => fn());
+    pendingActions = [];
+});
 
 // Global variables for impersonation
 let currentImpersonationUserId = null;
@@ -792,9 +795,9 @@ let isSubmittingImpersonation = false;
 
 // Impersonate user function
 function impersonateUser(userId, userName, userEmail) {
-    if (typeof bootstrap === 'undefined') {
-        // Retry after Bootstrap loads
-        setTimeout(() => impersonateUser(userId, userName, userEmail), 100);
+    if (!bootstrapReady) {
+        // Queue the action for when Bootstrap is ready
+        pendingActions.push(() => impersonateUser(userId, userName, userEmail));
         return;
     }
     currentImpersonationUserId = userId;
@@ -882,13 +885,21 @@ function confirmImpersonation() {
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait for Bootstrap then initialize tooltips
-    waitForBootstrap(function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-    });
+    // Initialize tooltips when Bootstrap is ready
+    function initTooltips() {
+        if (typeof bootstrap !== 'undefined') {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
+    }
+    
+    if (bootstrapReady) {
+        initTooltips();
+    } else {
+        document.addEventListener('bootstrap:ready', initTooltips);
+    }
     
     // Impersonation confirmation checkbox handler
     const confirmCheckbox = document.getElementById('impersonationConfirm');
