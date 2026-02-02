@@ -92,7 +92,7 @@ class AdminCommissionSimulatorController extends Controller
             $plan = $investment->investmentPlan;
             if (!$plan) continue;
 
-            $dailyRoi = $plan->roi_percentage ?? 0;
+            $dailyRoi = (float) ($plan->base_interest_rate ?? $plan->interest_rate ?? 0);
             $roiAmount = round(($investment->amount * $dailyRoi) / 100, 4);
             
             $expiryCap = $investment->amount * $baseMultiplier;
