@@ -82,19 +82,22 @@ class AdminCommissionSimulatorController extends Controller
 
     private function calculateTomorrowRoi(User $user): array
     {
-        $activeInvestments = $user->investments;
+        $activeInvestments = $user->investments->where('status', 'active');
         $roiDetails = [];
         $totalRoi = 0;
+
+        $baseMultiplier = (float) Setting::getValue('package_expiry_multiplier', 3);
 
         foreach ($activeInvestments as $investment) {
             $plan = $investment->investmentPlan;
             if (!$plan) continue;
 
-            $dailyRoi = $plan->getDailyRoi();
+            $dailyRoi = $plan->roi_percentage ?? 0;
             $roiAmount = round(($investment->amount * $dailyRoi) / 100, 4);
             
-            $expiryCap = $investment->getExpiryCap();
-            $remainingCap = $expiryCap - $investment->earnings_accumulated;
+            $expiryCap = $investment->amount * $baseMultiplier;
+            $earningsAccumulated = $investment->earnings_accumulated ?? 0;
+            $remainingCap = $expiryCap - $earningsAccumulated;
             
             if ($remainingCap <= 0) {
                 $roiAmount = 0;
@@ -112,7 +115,7 @@ class AdminCommissionSimulatorController extends Controller
                 'amount' => $investment->amount,
                 'roi_percentage' => $dailyRoi,
                 'roi_amount' => $roiAmount,
-                'earnings_accumulated' => $investment->earnings_accumulated,
+                'earnings_accumulated' => $earningsAccumulated,
                 'expiry_cap' => $expiryCap,
                 'remaining_cap' => max(0, $remainingCap),
                 'status' => $status
