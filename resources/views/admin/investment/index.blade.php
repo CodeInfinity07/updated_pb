@@ -367,13 +367,7 @@
                                     </td>
                                     <td>
                                         <div class="small">
-                                            @if($plan->roi_type === 'variable')
-                                            <div class="fw-semibold text-success mb-1">{{ $plan->min_interest_rate }}% - {{ $plan->max_interest_rate }}%</div>
-                                            <span class="badge bg-warning-subtle text-warning" style="font-size: 0.7em;">Variable</span>
-                                            @else
                                             <div class="fw-semibold text-success mb-1">{{ $plan->formatted_interest_rate }}</div>
-                                            <span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.7em;">Fixed</span>
-                                            @endif
                                             <div class="text-muted">{{ ucfirst($plan->return_type) }} • {{ $plan->formatted_duration }}</div>
                                         </div>
                                     </td>

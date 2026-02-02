@@ -250,59 +250,14 @@
                 </div>
                 <div class="p-4">
                     <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label">ROI Type <span class="text-danger">*</span></label>
-                            <div class="d-flex gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="roiType" id="roiFixed" value="fixed" 
-                                           {{ ($investmentPlan->roi_type ?? 'fixed') !== 'variable' ? 'checked' : '' }} onchange="toggleRoiType()">
-                                    <label class="form-check-label" for="roiFixed">
-                                        <strong>Fixed</strong> - Same rate every day
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="roiType" id="roiVariable" value="variable" 
-                                           {{ ($investmentPlan->roi_type ?? 'fixed') === 'variable' ? 'checked' : '' }} onchange="toggleRoiType()">
-                                    <label class="form-check-label" for="roiVariable">
-                                        <strong>Variable</strong> - Random rate within range
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Fixed ROI -->
-                        <div class="col-12 {{ ($investmentPlan->roi_type ?? 'fixed') === 'variable' ? 'hidden' : '' }}" id="fixedRoiSection">
+                        <div class="col-md-6">
                             <label class="form-label">Interest Rate <span class="text-danger">*</span></label>
                             <div class="input-group" style="max-width: 200px;">
                                 <input type="number" class="form-control" id="interestRate" 
                                        value="{{ $investmentPlan->interest_rate ?? '' }}" step="0.01" placeholder="0.50">
                                 <span class="input-group-text">%</span>
                             </div>
-                            <small class="text-muted">Users will receive this exact rate each period</small>
-                        </div>
-                        
-                        <!-- Variable ROI -->
-                        <div class="col-12 {{ ($investmentPlan->roi_type ?? 'fixed') !== 'variable' ? 'hidden' : '' }}" id="variableRoiSection">
-                            <label class="form-label">Interest Rate Range <span class="text-danger">*</span></label>
-                            <div class="row g-2" style="max-width: 400px;">
-                                <div class="col-6">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Min</span>
-                                        <input type="number" class="form-control" id="minInterestRate" 
-                                               value="{{ $investmentPlan->min_interest_rate ?? '' }}" step="0.0001" placeholder="0.30">
-                                        <span class="input-group-text">%</span>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Max</span>
-                                        <input type="number" class="form-control" id="maxInterestRate" 
-                                               value="{{ $investmentPlan->max_interest_rate ?? '' }}" step="0.0001" placeholder="0.90">
-                                        <span class="input-group-text">%</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <small class="text-muted">Users will receive a random rate between min and max each period</small>
+                            <small class="text-muted">Daily/Weekly/Monthly rate based on interest type</small>
                         </div>
                     </div>
                 </div>
@@ -430,20 +385,7 @@ const existingFeatures = @json($investmentPlan->features ?? []);
 
 document.addEventListener('DOMContentLoaded', function() {
     loadExistingFeatures();
-    toggleRoiType();
 });
-
-function toggleRoiType() {
-    const isVariable = document.getElementById('roiVariable').checked;
-    
-    if (isVariable) {
-        document.getElementById('fixedRoiSection').classList.add('hidden');
-        document.getElementById('variableRoiSection').classList.remove('hidden');
-    } else {
-        document.getElementById('fixedRoiSection').classList.remove('hidden');
-        document.getElementById('variableRoiSection').classList.add('hidden');
-    }
-}
 
 function loadExistingFeatures() {
     const container = document.getElementById('featuresContainer');
@@ -493,8 +435,6 @@ function selectColor(color) {
 }
 
 function updatePlan() {
-    const isVariable = document.getElementById('roiVariable').checked;
-    
     const planData = {
         name: document.getElementById('planName').value.trim(),
         description: document.getElementById('planDescription').value.trim(),
@@ -508,7 +448,8 @@ function updatePlan() {
         color_scheme: selectedColorScheme,
         minimum_amount: parseFloat(document.getElementById('minimumAmount').value),
         maximum_amount: parseFloat(document.getElementById('maximumAmount').value),
-        roi_type: isVariable ? 'variable' : 'fixed',
+        interest_rate: parseFloat(document.getElementById('interestRate').value),
+        roi_type: 'fixed',
         is_tiered: false
     };
     
@@ -523,27 +464,9 @@ function updatePlan() {
         return;
     }
     
-    // Get ROI values based on type
-    if (isVariable) {
-        planData.min_interest_rate = parseFloat(document.getElementById('minInterestRate').value);
-        planData.max_interest_rate = parseFloat(document.getElementById('maxInterestRate').value);
-        
-        if (!planData.min_interest_rate || !planData.max_interest_rate) {
-            showAlert('Please fill in both min and max interest rates', 'danger');
-            return;
-        }
-        
-        if (planData.min_interest_rate >= planData.max_interest_rate) {
-            showAlert('Max rate must be greater than min rate', 'danger');
-            return;
-        }
-    } else {
-        planData.interest_rate = parseFloat(document.getElementById('interestRate').value);
-        
-        if (!planData.interest_rate) {
-            showAlert('Please fill in interest rate', 'danger');
-            return;
-        }
+    if (!planData.interest_rate) {
+        showAlert('Please fill in interest rate', 'danger');
+        return;
     }
     
     // Get features
