@@ -112,7 +112,7 @@
                         <div class="col-6 col-md-3">
                             <div class="d-flex align-items-center p-2 bg-warning-subtle rounded">
                                 <div>
-                                    <div class="fw-semibold">TL-{{ auth()->user()->level ?? 1 }}</div>
+                                    <div class="fw-semibold">TL-{{ auth()->user()->profile->level ?? 1 }}</div>
                                     <small class="text-muted">User Level</small>
                                 </div>
                             </div>
