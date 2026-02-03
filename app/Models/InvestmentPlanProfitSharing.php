@@ -14,7 +14,7 @@ class InvestmentPlanProfitSharing extends Model
 
     protected $fillable = [
         'investment_plan_id',
-        'investment_plan_tier_id',
+        'tier_id',
         'level_1_commission',
         'level_2_commission',
         'level_3_commission',
@@ -46,7 +46,7 @@ class InvestmentPlanProfitSharing extends Model
 
     public function tier(): BelongsTo
     {
-        return $this->belongsTo(InvestmentPlanTier::class, 'investment_plan_tier_id');
+        return $this->belongsTo(InvestmentPlanTier::class, 'tier_id');
     }
 
     /*
@@ -187,7 +187,7 @@ class InvestmentPlanProfitSharing extends Model
 
     public function scopeForTier($query, $tierId)
     {
-        return $query->where('investment_plan_tier_id', $tierId);
+        return $query->where('tier_id', $tierId);
     }
 
     /*
@@ -219,7 +219,7 @@ class InvestmentPlanProfitSharing extends Model
 
             $profitSharing = self::create([
                 'investment_plan_id' => $plan->id,
-                'investment_plan_tier_id' => $tier->id,
+                'tier_id' => $tier->id,
                 'level_1_commission' => $rates['level_1'],
                 'level_2_commission' => $rates['level_2'],
                 'level_3_commission' => $rates['level_3'],
