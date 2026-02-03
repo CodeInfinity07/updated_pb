@@ -63,9 +63,9 @@ html[data-bs-theme='dark'][data-menu-color='light'] {
 
 /* Topbar Light */
 html[data-topbar-color='light'] {
-    --#{$prefix}topbar-bg: #{$white};
+    --#{$prefix}topbar-bg: #f8fafc;
     --#{$prefix}topbar-item-color: #1e3a5f;
-    --#{$prefix}topbar-search-bg: #f0f4f8;
+    --#{$prefix}topbar-search-bg: #e8eef4;
 }
 
 /* Topbar Dark */
