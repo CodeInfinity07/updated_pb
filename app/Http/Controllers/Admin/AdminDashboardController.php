@@ -716,8 +716,15 @@ class AdminDashboardController extends Controller
                 // Get total invested amount that was earning ROI during this month (excluding dummy users)
                 // Count all investments that started on or before the month end
                 // (All investments are currently active, so no need to check status)
+                // Using created_at as fallback when start_date is null
                 $investmentQuery = \App\Models\UserInvestment::where('type', 'investment')
-                    ->where('start_date', '<=', $monthEnd);
+                    ->where(function($q) use ($monthEnd) {
+                        $q->where('start_date', '<=', $monthEnd)
+                          ->orWhere(function($q2) use ($monthEnd) {
+                              $q2->whereNull('start_date')
+                                 ->where('created_at', '<=', $monthEnd);
+                          });
+                    });
                 
                 if (!empty($dummyUserIds)) {
                     $investmentQuery->whereNotIn('user_id', $dummyUserIds);
@@ -736,16 +743,30 @@ class AdminDashboardController extends Controller
                 $newUsersCount = $newUsersQuery->count();
                 
                 // Get users that invested this month (excluding dummy users)
+                // Using created_at as fallback when start_date is null
                 $usersInvestedQuery = \App\Models\UserInvestment::where('type', 'investment')
-                    ->whereBetween('start_date', [$monthStart, $monthEnd]);
+                    ->where(function($q) use ($monthStart, $monthEnd) {
+                        $q->whereBetween('start_date', [$monthStart, $monthEnd])
+                          ->orWhere(function($q2) use ($monthStart, $monthEnd) {
+                              $q2->whereNull('start_date')
+                                 ->whereBetween('created_at', [$monthStart, $monthEnd]);
+                          });
+                    });
                 if (!empty($dummyUserIds)) {
                     $usersInvestedQuery->whereNotIn('user_id', $dummyUserIds);
                 }
                 $usersInvestedCount = $usersInvestedQuery->distinct('user_id')->count('user_id');
                 
                 // Get new investments made this month (excluding dummy users)
+                // Using created_at as fallback when start_date is null
                 $newInvestmentsQuery = \App\Models\UserInvestment::where('type', 'investment')
-                    ->whereBetween('start_date', [$monthStart, $monthEnd]);
+                    ->where(function($q) use ($monthStart, $monthEnd) {
+                        $q->whereBetween('start_date', [$monthStart, $monthEnd])
+                          ->orWhere(function($q2) use ($monthStart, $monthEnd) {
+                              $q2->whereNull('start_date')
+                                 ->whereBetween('created_at', [$monthStart, $monthEnd]);
+                          });
+                    });
                 if (!empty($dummyUserIds)) {
                     $newInvestmentsQuery->whereNotIn('user_id', $dummyUserIds);
                 }
