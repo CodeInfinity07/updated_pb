@@ -19,21 +19,6 @@
             </div>
 
             <div class="d-flex align-items-center gap-1">
-                <!-- Theme Color (Light/Dark) -->
-                <div class="topbar-item">
-                    <button type="button" class="topbar-button" id="light-dark-mode">
-                        <iconify-icon icon="iconamoon:mode-dark-duotone" class="fs-24 align-middle"></iconify-icon>
-                    </button>
-                </div>
-
-                <!-- Theme Setting -->
-                <div class="topbar-item">
-                    <button type="button" class="topbar-button" id="theme-settings-btn" data-bs-toggle="offcanvas"
-                        data-bs-target="#theme-settings-offcanvas" aria-controls="theme-settings-offcanvas">
-                        <iconify-icon icon="iconamoon:settings-duotone" class="fs-24 align-middle"></iconify-icon>
-                    </button>
-                </div>
-
                 {{-- <!-- Activity -->
                 <div class="topbar-item d-none d-md-flex">
                     <button type="button" class="topbar-button" id="theme-settings-btn" data-bs-toggle="offcanvas"
