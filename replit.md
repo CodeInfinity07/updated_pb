@@ -11,7 +11,7 @@ The application is built on Laravel 11 (PHP 8.2) with a PostgreSQL database. The
 
 **Key Technical Implementations & Features:**
 *   **User Management**: Includes registration, login, profile management, and 2FA.
-*   **Investment Plans**: Supports both fixed and variable ROI, where variable ROI uses a date-based seed for consistent daily rates across users for a given plan.
+*   **Investment Plans**: Supports both fixed and variable ROI, where variable ROI uses a date-based seed for consistent daily rates across users for a given plan. Features investment merging (multiple investments in the same plan merge into one) with tier-based maximum limits enforced by user's profile level (TL-1 through TL-6). Level requirements (min investment, direct/indirect referrals) are checked, and helpful error messages show what's needed to unlock higher tiers.
 *   **Earnings System**:
     *   **Direct Sponsor Commission**: 8% on new investments paid immediately to the direct sponsor (uses 'commission' transaction type).
     *   **Profit Sharing (Multi-Level)**: Up to 3 levels of upline receive profit share when a downline user earns daily ROI, with configurable percentages per level (uses 'profit_share' transaction type).
