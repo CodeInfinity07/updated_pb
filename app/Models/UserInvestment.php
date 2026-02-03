@@ -49,6 +49,7 @@ class UserInvestment extends Model
             'start_date' => 'date',
             'end_date' => 'date',
             'last_payout_date' => 'date',
+            'return_history' => 'array',
         ];
     }
 
@@ -527,8 +528,11 @@ class UserInvestment extends Model
         $this->increment('paid_return', $amount);
         $this->update(['last_payout_date' => now()]);
 
-        // Update return history
-        $history = $this->return_history ?? [];
+        // Update return history - handle legacy string data
+        $history = $this->return_history;
+        if (!is_array($history)) {
+            $history = [];
+        }
         $history[] = [
             'amount' => $amount,
             'type' => $type,
