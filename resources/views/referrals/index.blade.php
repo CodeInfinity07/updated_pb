@@ -113,60 +113,75 @@
                 </div>
             @endif
 
-            <!-- Commission Structure - 10 Levels -->
+            <!-- Profit Share Levels by Tier -->
             @if($siteData['infobox_settings']['affiliates_show_levels'])
                 <div class="card mb-4">
                     <div class="card-header">
                         <h4 class="card-title d-flex align-items-center mb-0">
                             <iconify-icon icon="material-symbols:trending-up" class="me-2"></iconify-icon>
-                            ROI Commission Levels
+                            Profit Share Levels
                         </h4>
                         <p class="text-muted mb-0 mt-1" style="font-size: 0.85rem;">
-                            Earn commissions when your downline earns daily ROI
+                            Earn commissions when your downline earns daily ROI (Your Level: <strong>TL-{{ $userLevel }}</strong>)
                         </p>
                     </div>
                     <div class="card-body">
-                        <div class="row g-2">
-                            @php
-                                $levelColors = [
-                                    1 => ['border' => 'primary', 'text' => 'primary', 'bg' => 'primary-subtle'],
-                                    2 => ['border' => 'info', 'text' => 'info', 'bg' => 'info-subtle'],
-                                    3 => ['border' => 'success', 'text' => 'success', 'bg' => 'success-subtle'],
-                                    4 => ['border' => 'warning', 'text' => 'warning', 'bg' => 'warning-subtle'],
-                                    5 => ['border' => 'danger', 'text' => 'danger', 'bg' => 'danger-subtle'],
-                                    6 => ['border' => 'secondary', 'text' => 'secondary', 'bg' => 'secondary-subtle'],
-                                    7 => ['border' => 'dark', 'text' => 'dark', 'bg' => 'dark-subtle'],
-                                    8 => ['border' => 'primary', 'text' => 'primary', 'bg' => 'primary-subtle'],
-                                    9 => ['border' => 'info', 'text' => 'info', 'bg' => 'info-subtle'],
-                                    10 => ['border' => 'success', 'text' => 'success', 'bg' => 'success-subtle'],
-                                ];
-                            @endphp
+                        @php
+                            $tierColors = [
+                                1 => ['border' => 'secondary', 'text' => 'secondary', 'bg' => 'secondary-subtle', 'name' => 'TL-1'],
+                                2 => ['border' => 'info', 'text' => 'info', 'bg' => 'info-subtle', 'name' => 'TL-2'],
+                                3 => ['border' => 'success', 'text' => 'success', 'bg' => 'success-subtle', 'name' => 'TL-3'],
+                                4 => ['border' => 'warning', 'text' => 'warning', 'bg' => 'warning-subtle', 'name' => 'TL-4'],
+                                5 => ['border' => 'danger', 'text' => 'danger', 'bg' => 'danger-subtle', 'name' => 'TL-5'],
+                                6 => ['border' => 'primary', 'text' => 'primary', 'bg' => 'primary-subtle', 'name' => 'TL-6'],
+                            ];
+                        @endphp
 
-                            @forelse($commissionLevels as $commission)
-                                @php
-                                    $colors = $levelColors[$commission->level] ?? ['border' => 'secondary', 'text' => 'secondary', 'bg' => 'secondary-subtle'];
-                                @endphp
-                                <div class="col-6 col-md-4 col-lg-2">
-                                    <div class="card border-{{ $colors['border'] }} border h-100">
-                                        <div class="card-body text-center py-3">
-                                            <h4 class="mb-1 fw-bold text-{{ $colors['text'] }}">
-                                                {{ number_format($commission->percentage, 2) }}%
-                                            </h4>
-                                            <p class="text-muted mb-0" style="font-size: 0.8rem;">
-                                                Level {{ $commission->level }}
-                                            </p>
+                        @forelse($profitShareLevels as $profitShare)
+                            @php
+                                $tierLevel = $profitShare->tier->tier_level ?? 1;
+                                $colors = $tierColors[$tierLevel] ?? $tierColors[1];
+                                $isCurrentTier = $tierLevel == $userLevel;
+                            @endphp
+                            <div class="card mb-3 {{ $isCurrentTier ? 'border-2 border-primary shadow-sm' : 'border' }}">
+                                <div class="card-header py-2 bg-{{ $colors['bg'] }} d-flex justify-content-between align-items-center">
+                                    <span class="fw-semibold text-{{ $colors['text'] }}">
+                                        {{ $colors['name'] }}
+                                        @if($isCurrentTier)
+                                            <span class="badge bg-primary ms-2">Your Level</span>
+                                        @endif
+                                    </span>
+                                    <span class="text-muted small">{{ $profitShare->tier->name ?? 'Tier ' . $tierLevel }}</span>
+                                </div>
+                                <div class="card-body py-3">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="fw-bold text-{{ $colors['text'] }}" style="font-size: 1.25rem;">
+                                                {{ number_format($profitShare->level_1_commission, 1) }}%
+                                            </div>
+                                            <small class="text-muted">Level 1</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="fw-bold text-{{ $colors['text'] }}" style="font-size: 1.25rem;">
+                                                {{ number_format($profitShare->level_2_commission, 1) }}%
+                                            </div>
+                                            <small class="text-muted">Level 2</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="fw-bold text-{{ $colors['text'] }}" style="font-size: 1.25rem;">
+                                                {{ number_format($profitShare->level_3_commission, 1) }}%
+                                            </div>
+                                            <small class="text-muted">Level 3</small>
                                         </div>
                                     </div>
                                 </div>
-                            @empty
-                                <div class="col-12">
-                                    <div class="alert alert-info mb-0">
-                                        <iconify-icon icon="mdi:information-outline" class="me-1"></iconify-icon>
-                                        Commission levels not configured yet.
-                                    </div>
-                                </div>
-                            @endforelse
-                        </div>
+                            </div>
+                        @empty
+                            <div class="alert alert-info mb-0">
+                                <iconify-icon icon="mdi:information-outline" class="me-1"></iconify-icon>
+                                Profit share levels not configured yet.
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             @endif

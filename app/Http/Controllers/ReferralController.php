@@ -11,7 +11,8 @@ use App\Models\Transaction;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 use App\Models\User;
-use App\Models\ReferralCommissionLevel;
+use App\Models\InvestmentPlanProfitSharing;
+use App\Models\InvestmentPlanTier;
 use Illuminate\Support\Str;
 use Exception;
 
@@ -39,10 +40,17 @@ class ReferralController extends Controller
         // Get site settings
         $siteData = $this->getSiteData();
 
-        // Get commission levels (10 levels)
-        $commissionLevels = ReferralCommissionLevel::where('is_active', true)
-            ->orderBy('level')
-            ->get();
+        // Get profit share levels based on user's tier
+        $userLevel = $user->profile->level ?? 1;
+        $profitShareLevels = InvestmentPlanProfitSharing::with('tier')
+            ->whereHas('tier', function($q) {
+                $q->where('is_active', true);
+            })
+            ->where('is_active', true)
+            ->get()
+            ->sortBy(function($ps) {
+                return $ps->tier->tier_level ?? 0;
+            });
 
         return view('referrals.index', compact(
             'user',
@@ -50,7 +58,8 @@ class ReferralController extends Controller
             'levels',
             'paginatedUsers',
             'siteData',
-            'commissionLevels'
+            'profitShareLevels',
+            'userLevel'
         ));
     }
 
