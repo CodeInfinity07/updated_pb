@@ -40,16 +40,13 @@ class ReferralController extends Controller
         // Get site settings
         $siteData = $this->getSiteData();
 
-        // Get profit share levels based on user's tier
+        // Get profit share levels based on user's tier only
         $userLevel = $user->profile->level ?? 1;
         $profitShareLevels = InvestmentPlanProfitSharing::with('tier')
-            ->get()
-            ->filter(function($ps) {
-                return $ps->tier !== null;
+            ->whereHas('tier', function($query) use ($userLevel) {
+                $query->where('tier_level', $userLevel);
             })
-            ->sortBy(function($ps) {
-                return $ps->tier->tier_level ?? 0;
-            });
+            ->get();
 
         return view('referrals.index', compact(
             'user',
