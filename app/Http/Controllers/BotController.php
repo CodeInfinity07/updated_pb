@@ -286,8 +286,19 @@ class BotController extends Controller
             DB::beginTransaction();
 
             try {
-                // Always create a new investment (no merging)
-                $result = $this->createNewInvestment($amount, $plan, $tier, $user);
+                // Check for existing active investment in the same plan
+                $existingInvestment = UserInvestment::where('user_id', $user->id)
+                    ->where('investment_plan_id', $plan->id)
+                    ->where('status', 'active')
+                    ->first();
+
+                if ($existingInvestment) {
+                    // Merge with existing investment
+                    $result = $this->mergeInvestment($existingInvestment, $amount, $plan, $tier, $user);
+                } else {
+                    // Create new investment
+                    $result = $this->createNewInvestment($amount, $plan, $tier, $user);
+                }
 
                 if (!$result['success']) {
                     throw new Exception($result['message']);
@@ -507,15 +518,52 @@ class BotController extends Controller
         $currentAmount = $existingInvestment->amount;
         $totalAmount = $currentAmount + $newAmount;
 
-        // Check if merged amount exceeds tier maximum
-        $maxAllowed = $tier ? $tier->maximum_amount : $plan->maximum_amount;
+        // Get user's current level
+        $userLevel = $user->profile ? (int) $user->profile->level : 0;
+        if ($userLevel === 0) {
+            $userLevel = 1;
+        }
+
+        // Get the tier for user's current level
+        $currentTier = InvestmentPlanTier::where('investment_plan_id', $plan->id)
+            ->where('tier_level', $userLevel)
+            ->where('is_active', true)
+            ->first();
+
+        // Use tier maximum based on user's level
+        $maxAllowed = $currentTier ? (float) $currentTier->maximum_amount : ($tier ? (float) $tier->maximum_amount : (float) $plan->maximum_amount);
 
         if ($totalAmount > $maxAllowed) {
+            // Check if user qualifies for next level
+            $nextLevelInfo = $this->getNextLevelRequirements($user, $userLevel);
+            
+            $errorMessage = "Your total investment ($" . number_format($totalAmount, 2) . 
+                ") would exceed the maximum limit of $" . number_format($maxAllowed, 2) . 
+                " for your current level (TL-{$userLevel}). Current investment: $" . number_format($currentAmount, 2) . ".";
+            
+            if ($nextLevelInfo) {
+                $errorMessage .= "\n\nTo unlock higher investment limits (TL-" . ($userLevel + 1) . "), you need:";
+                if ($nextLevelInfo['direct_needed'] > 0) {
+                    $errorMessage .= "\n- {$nextLevelInfo['direct_needed']} more direct referrals";
+                }
+                if ($nextLevelInfo['indirect_needed'] > 0) {
+                    $errorMessage .= "\n- {$nextLevelInfo['indirect_needed']} more team members";
+                }
+                if ($nextLevelInfo['investment_needed'] > 0) {
+                    $errorMessage .= "\n- $" . number_format($nextLevelInfo['investment_needed'], 2) . " more in investments";
+                }
+            }
+            
             return [
                 'success' => false,
-                'message' => "Cannot process your investments. Total amount ($" . number_format($totalAmount, 2) .
-                    ") would exceed the maximum limit of $" . number_format($maxAllowed, 2) .
-                    " for your tier level. Current investment: $" . number_format($currentAmount, 2) . "."
+                'message' => $errorMessage,
+                'data' => [
+                    'current_level' => $userLevel,
+                    'max_allowed' => $maxAllowed,
+                    'current_investment' => $currentAmount,
+                    'requested_total' => $totalAmount,
+                    'next_level_requirements' => $nextLevelInfo
+                ]
             ];
         }
 
@@ -592,6 +640,89 @@ class BotController extends Controller
                 'transaction_id' => $transaction->transaction_id,
                 'tier_level' => $user->profile->level
             ]
+        ];
+    }
+
+    /**
+     * Count indirect referrals (team members excluding direct referrals)
+     * Uses BFS traversal to avoid double-counting and minimize queries
+     */
+    private function countIndirectReferrals(User $user): int
+    {
+        $directReferralIds = $user->directReferrals()->pluck('id')->toArray();
+        
+        if (empty($directReferralIds)) {
+            return 0;
+        }
+        
+        $indirectCount = 0;
+        $currentLevelIds = $directReferralIds;
+        $processedIds = array_flip($directReferralIds);
+        $maxDepth = 10;
+        $depth = 0;
+        
+        while (!empty($currentLevelIds) && $depth < $maxDepth) {
+            // Get all direct referrals of current level users in a single query
+            $nextLevelIds = User::whereIn('sponsor_id', $currentLevelIds)
+                ->whereNotIn('id', array_keys($processedIds))
+                ->pluck('id')
+                ->toArray();
+            
+            // Count only the users at this level (indirect to original user)
+            $indirectCount += count($nextLevelIds);
+            
+            // Mark as processed and move to next level
+            foreach ($nextLevelIds as $id) {
+                $processedIds[$id] = true;
+            }
+            
+            $currentLevelIds = $nextLevelIds;
+            $depth++;
+        }
+        
+        return $indirectCount;
+    }
+
+    /**
+     * Get requirements for next level upgrade
+     */
+    private function getNextLevelRequirements(User $user, int $currentLevel): ?array
+    {
+        $nextLevel = $currentLevel + 1;
+        
+        // Get next level settings from commission_settings
+        $nextLevelSettings = \App\Models\CommissionSetting::where('level', $nextLevel)
+            ->where('is_active', true)
+            ->first();
+        
+        if (!$nextLevelSettings) {
+            return null;
+        }
+        
+        // Get user's current stats
+        $directReferrals = $user->directReferrals()->count();
+        
+        // Calculate indirect referrals (team members excluding direct referrals)
+        $indirectReferrals = $this->countIndirectReferrals($user);
+        $totalInvested = (float) $user->total_invested;
+        
+        // Calculate what's needed
+        $directNeeded = max(0, $nextLevelSettings->min_direct_referrals - $directReferrals);
+        $indirectNeeded = max(0, $nextLevelSettings->min_indirect_referrals - $indirectReferrals);
+        $investmentNeeded = max(0, (float) $nextLevelSettings->min_investment - $totalInvested);
+        
+        return [
+            'next_level' => $nextLevel,
+            'next_level_name' => $nextLevelSettings->name,
+            'direct_needed' => $directNeeded,
+            'indirect_needed' => $indirectNeeded,
+            'investment_needed' => $investmentNeeded,
+            'current_direct' => $directReferrals,
+            'current_indirect' => $indirectReferrals,
+            'current_investment' => $totalInvested,
+            'required_direct' => $nextLevelSettings->min_direct_referrals,
+            'required_indirect' => $nextLevelSettings->min_indirect_referrals,
+            'required_investment' => (float) $nextLevelSettings->min_investment
         ];
     }
 
