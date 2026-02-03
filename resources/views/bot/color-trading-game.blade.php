@@ -375,6 +375,7 @@
                                         
                                         // Calculate 24-hour progress - FIXED LOGIC
                                         $lastReturnDate = $investment->last_return_at ?? $investment->started_at;
+                                        $lastReturnDate = $lastReturnDate instanceof \Carbon\Carbon ? $lastReturnDate : \Carbon\Carbon::parse($lastReturnDate);
                                         $hoursSinceLastReturn = $lastReturnDate->diffInHours(now());
                                         $progress24h = min(100, ($hoursSinceLastReturn / 24) * 100);
                                         // Ensure we never show negative progress
