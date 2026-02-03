@@ -108,13 +108,26 @@ class BotController extends Controller
             // Use profile level - if level 0, allow access to tier 1
             $profileLevel = $user->profile ? $user->profile->level : 0;
             $tierLevel = $profileLevel == 0 ? 1 : $profileLevel;
+            
+            // Check if user qualifies for a higher tier based on referrals
+            $qualifyingLevel = $this->findHighestQualifyingTier($user);
+            $effectiveLevel = max($tierLevel, $qualifyingLevel);
 
-            // Find appropriate tier for user's profile level
+            // Find appropriate tier for user's effective level (current or qualified)
             $tier = InvestmentPlanTier::where('investment_plan_id', $plan->id)
                 ->where('is_active', true)
-                ->where('tier_level', $tierLevel)
+                ->where('tier_level', $effectiveLevel)
                 ->orderBy('tier_level', 'desc')
                 ->first();
+
+            if (!$tier) {
+                // Fall back to user's actual level tier
+                $tier = InvestmentPlanTier::where('investment_plan_id', $plan->id)
+                    ->where('is_active', true)
+                    ->where('tier_level', $tierLevel)
+                    ->orderBy('tier_level', 'desc')
+                    ->first();
+            }
 
             if (!$tier) {
                 $nextTier = InvestmentPlanTier::where('investment_plan_id', $plan->id)
@@ -143,7 +156,9 @@ class BotController extends Controller
                 'maximum_amount' => $tier->maximum_amount,
                 'interest_rate' => $tier->interest_rate,
                 'tier_name' => $tier->tier_name,
-                'tier_level' => $tier->tier_level
+                'tier_level' => $tier->tier_level,
+                'qualifying_level' => $qualifyingLevel,
+                'will_upgrade' => $qualifyingLevel > $tierLevel
             ];
         } else {
             // Non-tiered plan
@@ -536,39 +551,79 @@ class BotController extends Controller
 
         // Use tier maximum based on user's level
         $maxAllowed = $currentTier ? (float) $currentTier->maximum_amount : ($tier ? (float) $tier->maximum_amount : (float) $plan->maximum_amount);
+        
+        $upgradedLevel = null;
+        $pendingUpgradeLevel = null; // Store qualifying level for upgrade after successful investment
 
         if ($totalAmount > $maxAllowed) {
-            // Check if user qualifies for next level
-            $nextLevelInfo = $this->getNextLevelRequirements($user, $userLevel);
+            // Check if user qualifies for a higher level based on referrals
+            $qualifyingLevel = $this->findHighestQualifyingTier($user);
             
-            $errorMessage = "Your total investment ($" . number_format($totalAmount, 2) . 
-                ") would exceed the maximum limit of $" . number_format($maxAllowed, 2) . 
-                " for your current level (TL-{$userLevel}). Current investment: $" . number_format($currentAmount, 2) . ".";
-            
-            if ($nextLevelInfo) {
-                $errorMessage .= "\n\nTo unlock higher investment limits (TL-" . ($userLevel + 1) . "), you need:";
-                if ($nextLevelInfo['direct_needed'] > 0) {
-                    $errorMessage .= "\n- {$nextLevelInfo['direct_needed']} more direct referrals";
+            if ($qualifyingLevel > $userLevel) {
+                // User qualifies for higher level! Get that tier's max
+                $qualifyingTier = InvestmentPlanTier::where('investment_plan_id', $plan->id)
+                    ->where('tier_level', $qualifyingLevel)
+                    ->where('is_active', true)
+                    ->first();
+                
+                $newMaxAllowed = $qualifyingTier ? (float) $qualifyingTier->maximum_amount : $maxAllowed;
+                
+                if ($totalAmount <= $newMaxAllowed) {
+                    // Investment fits in the higher tier - mark for upgrade after successful investment
+                    $pendingUpgradeLevel = $qualifyingLevel;
+                    $maxAllowed = $newMaxAllowed;
+                    
+                    Log::info('User qualifies for auto-upgrade, pending successful investment', [
+                        'user_id' => $user->id,
+                        'pending_level' => $qualifyingLevel,
+                        'investment_amount' => $totalAmount
+                    ]);
+                } else {
+                    // Even with upgrade, investment is too high
+                    return [
+                        'success' => false,
+                        'message' => "Your total investment ($" . number_format($totalAmount, 2) . 
+                            ") exceeds the maximum limit of $" . number_format($newMaxAllowed, 2) . 
+                            " for TL-{$qualifyingLevel} (which you qualify for based on referrals).",
+                        'data' => [
+                            'current_level' => $userLevel,
+                            'qualifying_level' => $qualifyingLevel,
+                            'max_allowed' => $newMaxAllowed,
+                            'current_investment' => $currentAmount,
+                            'requested_total' => $totalAmount
+                        ]
+                    ];
                 }
-                if ($nextLevelInfo['indirect_needed'] > 0) {
-                    $errorMessage .= "\n- {$nextLevelInfo['indirect_needed']} more team members";
+            } else {
+                // User doesn't qualify for higher tier based on referrals
+                $nextLevelInfo = $this->getNextLevelRequirements($user, $userLevel);
+                
+                $errorMessage = "Your total investment ($" . number_format($totalAmount, 2) . 
+                    ") would exceed the maximum limit of $" . number_format($maxAllowed, 2) . 
+                    " for your current level (TL-{$userLevel}). Current investment: $" . number_format($currentAmount, 2) . ".";
+                
+                if ($nextLevelInfo) {
+                    $errorMessage .= "\n\nTo unlock higher investment limits (TL-" . ($userLevel + 1) . "), you need:";
+                    if ($nextLevelInfo['direct_needed'] > 0) {
+                        $errorMessage .= "\n- {$nextLevelInfo['direct_needed']} more direct referrals (who invested \$50+)";
+                    }
+                    if ($nextLevelInfo['indirect_needed'] > 0) {
+                        $errorMessage .= "\n- {$nextLevelInfo['indirect_needed']} more team members (Level 2+3 who invested \$50+)";
+                    }
                 }
-                if ($nextLevelInfo['investment_needed'] > 0) {
-                    $errorMessage .= "\n- $" . number_format($nextLevelInfo['investment_needed'], 2) . " more in investments";
-                }
+                
+                return [
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'data' => [
+                        'current_level' => $userLevel,
+                        'max_allowed' => $maxAllowed,
+                        'current_investment' => $currentAmount,
+                        'requested_total' => $totalAmount,
+                        'next_level_requirements' => $nextLevelInfo
+                    ]
+                ];
             }
-            
-            return [
-                'success' => false,
-                'message' => $errorMessage,
-                'data' => [
-                    'current_level' => $userLevel,
-                    'max_allowed' => $maxAllowed,
-                    'current_investment' => $currentAmount,
-                    'requested_total' => $totalAmount,
-                    'next_level_requirements' => $nextLevelInfo
-                ]
-            ];
         }
 
         // Deduct from user's crypto wallets
@@ -630,9 +685,30 @@ class BotController extends Controller
 
         $this->directSponsorCommissionService->distributeCommission($existingInvestment, $newAmount);
 
+        // Apply pending upgrade after successful investment (atomic with transaction)
+        if ($pendingUpgradeLevel) {
+            $this->upgradeUserLevel($user, $pendingUpgradeLevel);
+            $upgradedLevel = $pendingUpgradeLevel;
+            $user->refresh();
+            $user->load('profile');
+            
+            Log::info('User auto-upgraded based on referral qualifications after successful investment', [
+                'user_id' => $user->id,
+                'new_level' => $pendingUpgradeLevel,
+                'investment_amount' => $totalAmount
+            ]);
+        }
+
+        // Build success message
+        $successMessage = "Successfully added $" . number_format($newAmount, 2) . " to your existing {$plan->name} investment! Total investment: $" . number_format($totalAmount, 2);
+        
+        if ($upgradedLevel) {
+            $successMessage .= " You have been upgraded to TL-{$upgradedLevel} based on your referral achievements!";
+        }
+
         return [
             'success' => true,
-            'message' => "Successfully added $" . number_format($newAmount, 2) . " to your existing {$plan->name} investment! Total investment: $" . number_format($totalAmount, 2),
+            'message' => $successMessage,
             'data' => [
                 'investment_id' => $existingInvestment->id,
                 'action_type' => 'merged',
@@ -642,7 +718,9 @@ class BotController extends Controller
                 'tier_name' => $tier ? $tier->tier_name : null,
                 'expected_total_return' => $newTotalReturn,
                 'transaction_id' => $transaction->transaction_id,
-                'tier_level' => $user->profile->level
+                'tier_level' => $user->profile->level,
+                'auto_upgraded' => $upgradedLevel !== null,
+                'upgraded_to_level' => $upgradedLevel
             ]
         ];
     }
@@ -685,6 +763,134 @@ class BotController extends Controller
         }
         
         return $indirectCount;
+    }
+
+    /**
+     * Check if user meets referral requirements for a specific level
+     * Returns true if user has enough direct and indirect referrals
+     */
+    private function userMeetsReferralRequirements(User $user, int $level): bool
+    {
+        $levelSettings = \App\Models\CommissionSetting::where('level', $level)
+            ->where('is_active', true)
+            ->first();
+        
+        if (!$levelSettings) {
+            return false;
+        }
+        
+        $directReferrals = $this->countQualifiedDirectReferrals($user);
+        $indirectReferrals = $this->countQualifiedIndirectReferrals($user);
+        
+        return $directReferrals >= $levelSettings->min_direct_referrals 
+            && $indirectReferrals >= $levelSettings->min_indirect_referrals;
+    }
+    
+    /**
+     * Count qualified direct referrals (users who have invested $50+ excluding bot_fee)
+     */
+    private function countQualifiedDirectReferrals(User $user): int
+    {
+        // Get users with $50+ in actual investments (excluding bot_fee type)
+        $qualifiedUserIds = \App\Models\UserInvestment::select('user_id')
+            ->where(function($q) {
+                $q->where('type', '!=', 'bot_fee')
+                  ->orWhereNull('type');
+            })
+            ->groupBy('user_id')
+            ->havingRaw('SUM(amount) >= 50')
+            ->pluck('user_id')
+            ->toArray();
+        
+        return $user->directReferrals()
+            ->where('status', 'active')
+            ->whereIn('id', $qualifiedUserIds)
+            ->count();
+    }
+    
+    /**
+     * Count qualified indirect referrals (Level 2 + Level 3 who have invested $50+ excluding bot_fee)
+     */
+    private function countQualifiedIndirectReferrals(User $user): int
+    {
+        // Get users with $50+ in actual investments (excluding bot_fee type)
+        $qualifiedUserIds = \App\Models\UserInvestment::select('user_id')
+            ->where(function($q) {
+                $q->where('type', '!=', 'bot_fee')
+                  ->orWhereNull('type');
+            })
+            ->groupBy('user_id')
+            ->havingRaw('SUM(amount) >= 50')
+            ->pluck('user_id')
+            ->toArray();
+        
+        // Level 1 (Direct)
+        $level1Ids = $user->directReferrals()
+            ->where('status', 'active')
+            ->whereIn('id', $qualifiedUserIds)
+            ->pluck('id')
+            ->toArray();
+        
+        if (empty($level1Ids)) {
+            return 0;
+        }
+        
+        // Level 2
+        $level2Ids = User::whereIn('sponsor_id', $level1Ids)
+            ->where('status', 'active')
+            ->whereIn('id', $qualifiedUserIds)
+            ->pluck('id')
+            ->toArray();
+        
+        $level2Count = count($level2Ids);
+        
+        // Level 3
+        $level3Count = 0;
+        if (!empty($level2Ids)) {
+            $level3Count = User::whereIn('sponsor_id', $level2Ids)
+                ->where('status', 'active')
+                ->whereIn('id', $qualifiedUserIds)
+                ->count();
+        }
+        
+        return $level2Count + $level3Count;
+    }
+    
+    /**
+     * Find the highest tier user qualifies for based on referrals
+     */
+    private function findHighestQualifyingTier(User $user): int
+    {
+        $tiers = \App\Models\CommissionSetting::where('is_active', true)
+            ->orderBy('level', 'desc')
+            ->get();
+        
+        foreach ($tiers as $tier) {
+            if ($this->userMeetsReferralRequirements($user, $tier->level)) {
+                return $tier->level;
+            }
+        }
+        
+        return 1; // Default to level 1
+    }
+    
+    /**
+     * Upgrade user's profile level
+     */
+    private function upgradeUserLevel(User $user, int $newLevel): void
+    {
+        if ($user->profile) {
+            $user->profile->update(['level' => $newLevel]);
+        }
+        $user->update([
+            'user_level' => $newLevel,
+            'level_updated_at' => now()
+        ]);
+        
+        Log::info('User level upgraded via referral qualification', [
+            'user_id' => $user->id,
+            'new_level' => $newLevel
+        ]);
     }
 
     /**
@@ -738,6 +944,13 @@ class BotController extends Controller
         // Check if this is first investment (bot activation)
         $isFirstInvestment = !$user->bot_activated_at;
         $investmentAmount = $amount;
+        
+        // Store current level for later upgrade check (upgrade happens after successful investment)
+        $userLevel = $user->profile ? (int) $user->profile->level : 0;
+        if ($userLevel === 0) {
+            $userLevel = 1;
+        }
+        $upgradedLevel = null;
         
         // Deduct full amount from user's crypto wallets (includes bot fee on first investment)
         if (!$user->deductFromWallets($amount)) {
@@ -826,9 +1039,30 @@ class BotController extends Controller
 
         $this->directSponsorCommissionService->distributeCommission($userInvestment);
 
+        // Check if user should be upgraded based on referral qualifications (after successful investment)
+        $qualifyingLevel = $this->findHighestQualifyingTier($user);
+        if ($qualifyingLevel > $userLevel) {
+            $this->upgradeUserLevel($user, $qualifyingLevel);
+            $upgradedLevel = $qualifyingLevel;
+            $user->refresh();
+            $user->load('profile');
+            
+            Log::info('User auto-upgraded on new investment based on referral qualifications', [
+                'user_id' => $user->id,
+                'old_level' => $userLevel,
+                'new_level' => $qualifyingLevel
+            ]);
+        }
+
+        // Build success message
+        $successMessage = "Successfully invested $" . number_format($investmentAmount, 2) . " in {$plan->name}!";
+        if ($upgradedLevel) {
+            $successMessage .= " You have been upgraded to TL-{$upgradedLevel} based on your referral achievements!";
+        }
+
         return [
             'success' => true,
-            'message' => "Successfully invested $" . number_format($investmentAmount, 2) . " in {$plan->name}!",
+            'message' => $successMessage,
             'data' => [
                 'investment_id' => $userInvestment->id,
                 'action_type' => 'created',
@@ -839,7 +1073,9 @@ class BotController extends Controller
                 'tier_name' => $tier ? $tier->tier_name : null,
                 'expected_total_return' => $userInvestment->total_return,
                 'transaction_id' => $transaction->transaction_id,
-                'tier_level' => $user->profile->level
+                'tier_level' => $user->profile->level,
+                'auto_upgraded' => $upgradedLevel !== null,
+                'upgraded_to_level' => $upgradedLevel
             ]
         ];
     }
