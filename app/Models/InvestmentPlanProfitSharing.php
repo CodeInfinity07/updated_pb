@@ -10,7 +10,7 @@ class InvestmentPlanProfitSharing extends Model
 {
     use HasFactory;
 
-    protected $table = 'investment_plan_profit_sharings';
+    protected $table = 'investment_plan_profit_sharing';
 
     protected $fillable = [
         'investment_plan_id',
