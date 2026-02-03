@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Carbon\Carbon;
+use App\Models\InvestmentPlanTier;
 
 class UserInvestment extends Model
 {
@@ -383,35 +384,35 @@ class UserInvestment extends Model
 
         $plan = $this->investmentPlan;
         $investmentAmount = floatval($this->amount ?? 0);
-
-        // Determine the interest rate to use (in priority order):
-        // 1. tier_interest_rate on investment (for tiered plans)
-        // 2. roi_percentage on investment
-        // 3. daily_return on investment (already calculated amount, return directly)
-        // 4. base_interest_rate on plan (for tiered plans)
-        // 5. interest_rate on plan
         
-        if (!empty($this->daily_return) && floatval($this->daily_return) > 0) {
-            return round(floatval($this->daily_return), 2);
+        // Get interest rate from the investment's tier (same as ROI simulator)
+        $tier = InvestmentPlanTier::where('investment_plan_id', $plan->id)
+            ->where('tier_level', $this->tier_level ?? 1)
+            ->first();
+        
+        $dailyRoi = $tier ? (float) $tier->interest_rate : 0;
+        
+        // Fallback to plan's base_interest_rate if no tier found
+        if ($dailyRoi <= 0 && !empty($plan->base_interest_rate)) {
+            $dailyRoi = floatval($plan->base_interest_rate);
         }
         
-        $interestRate = 0;
+        // Calculate ROI amount
+        $roiAmount = round(($investmentAmount * $dailyRoi) / 100, 4);
         
-        if (!empty($this->tier_interest_rate)) {
-            $interestRate = floatval($this->tier_interest_rate);
-        } elseif (!empty($this->roi_percentage)) {
-            $interestRate = floatval($this->roi_percentage);
-        } elseif (!empty($plan->base_interest_rate)) {
-            $interestRate = floatval($plan->base_interest_rate);
-        } elseif (!empty($plan->interest_rate)) {
-            $interestRate = floatval($plan->interest_rate);
+        // Check expiry cap (same as ROI simulator)
+        $baseMultiplier = (float) \App\Models\Setting::getValue('package_expiry_multiplier', 3);
+        $expiryCap = $investmentAmount * $baseMultiplier;
+        $earningsAccumulated = $this->earnings_accumulated ?? 0;
+        $remainingCap = $expiryCap - $earningsAccumulated;
+        
+        if ($remainingCap <= 0) {
+            return 0.00;
+        } elseif ($roiAmount > $remainingCap) {
+            return round($remainingCap, 2);
         }
 
-        // Calculate return: amount × (rate / 100)
-        $rate = $interestRate / 100;
-        $returnAmount = $investmentAmount * $rate;
-
-        return round($returnAmount, 2);
+        return round($roiAmount, 2);
     }
 
     /**
