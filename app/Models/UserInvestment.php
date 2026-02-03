@@ -384,8 +384,28 @@ class UserInvestment extends Model
         $plan = $this->investmentPlan;
         $investmentAmount = floatval($this->amount ?? 0);
 
-        // Simple fixed ROI: use the interest_rate from plan
-        $interestRate = floatval($plan->interest_rate ?? 0);
+        // Determine the interest rate to use (in priority order):
+        // 1. tier_interest_rate on investment (for tiered plans)
+        // 2. roi_percentage on investment
+        // 3. daily_return on investment (already calculated amount, return directly)
+        // 4. base_interest_rate on plan (for tiered plans)
+        // 5. interest_rate on plan
+        
+        if (!empty($this->daily_return) && floatval($this->daily_return) > 0) {
+            return round(floatval($this->daily_return), 2);
+        }
+        
+        $interestRate = 0;
+        
+        if (!empty($this->tier_interest_rate)) {
+            $interestRate = floatval($this->tier_interest_rate);
+        } elseif (!empty($this->roi_percentage)) {
+            $interestRate = floatval($this->roi_percentage);
+        } elseif (!empty($plan->base_interest_rate)) {
+            $interestRate = floatval($plan->base_interest_rate);
+        } elseif (!empty($plan->interest_rate)) {
+            $interestRate = floatval($plan->interest_rate);
+        }
 
         // Calculate return: amount × (rate / 100)
         $rate = $interestRate / 100;
