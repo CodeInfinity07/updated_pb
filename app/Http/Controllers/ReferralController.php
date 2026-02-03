@@ -43,11 +43,10 @@ class ReferralController extends Controller
         // Get profit share levels based on user's tier
         $userLevel = $user->profile->level ?? 1;
         $profitShareLevels = InvestmentPlanProfitSharing::with('tier')
-            ->whereHas('tier', function($q) {
-                $q->where('is_active', true);
-            })
-            ->where('is_active', true)
             ->get()
+            ->filter(function($ps) {
+                return $ps->tier !== null;
+            })
             ->sortBy(function($ps) {
                 return $ps->tier->tier_level ?? 0;
             });
