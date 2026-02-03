@@ -286,10 +286,14 @@ class BotController extends Controller
             DB::beginTransaction();
 
             try {
-                // Check for existing active investment in the same plan
+                // Lock user row to prevent race conditions on investment creation/merging
+                $user = User::where('id', $user->id)->lockForUpdate()->first();
+                
+                // Check for existing active investment in the same plan (with lock)
                 $existingInvestment = UserInvestment::where('user_id', $user->id)
                     ->where('investment_plan_id', $plan->id)
                     ->where('status', 'active')
+                    ->lockForUpdate()
                     ->first();
 
                 if ($existingInvestment) {
