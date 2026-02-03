@@ -44,34 +44,34 @@ html[data-bs-theme='dark'],
 
 /* Main Menu Light */
 html[data-menu-color='light'] {
-    --#{$prefix}main-nav-bg: #ffffff;
-    --#{$prefix}main-nav-item-color: #8486a7;
-    --#{$prefix}main-nav-item-hover-bg: #f3f1fa;
-    --#{$prefix}main-nav-item-hover-color: #3d4756;
-    --#{$prefix}main-nav-border-color: #eaedf1;
+    --#{$prefix}main-nav-bg: #1e3a5f;
+    --#{$prefix}main-nav-item-color: #a8c5e8;
+    --#{$prefix}main-nav-item-hover-bg: #2c4a7c;
+    --#{$prefix}main-nav-item-hover-color: #ffffff;
+    --#{$prefix}main-nav-border-color: #2c4a7c;
 }
 
 /* Main Menu Dark */
 html[data-menu-color='dark'],
 html[data-bs-theme='dark'][data-menu-color='light'] {
-    --#{$prefix}main-nav-bg: #262d34;
-    --#{$prefix}main-nav-item-color: #9097a7;
-    --#{$prefix}main-nav-item-hover-bg: #{shade-color(#36404a, 8%)};
+    --#{$prefix}main-nav-bg: #0f2744;
+    --#{$prefix}main-nav-item-color: #7fa8d4;
+    --#{$prefix}main-nav-item-hover-bg: #1e3a5f;
     --#{$prefix}main-nav-item-hover-color: #{$white};
-    --#{$prefix}main-nav-border-color: #2f3944;
+    --#{$prefix}main-nav-border-color: #1e3a5f;
 }
 
 /* Topbar Light */
 html[data-topbar-color='light'] {
     --#{$prefix}topbar-bg: #{$white};
-    --#{$prefix}topbar-item-color: #707793;
-    --#{$prefix}topbar-search-bg: #f3f3f9;
+    --#{$prefix}topbar-item-color: #1e3a5f;
+    --#{$prefix}topbar-search-bg: #f0f4f8;
 }
 
 /* Topbar Dark */
 html[data-topbar-color='dark'],
 html[data-bs-theme='dark'][data-topbar-color='light'] {
-    --#{$prefix}topbar-bg: #22282e;
-    --#{$prefix}topbar-item-color: #dee2e6;
-    --#{$prefix}topbar-search-bg: #2c3238;
+    --#{$prefix}topbar-bg: #1e3a5f;
+    --#{$prefix}topbar-item-color: #a8c5e8;
+    --#{$prefix}topbar-search-bg: #2c4a7c;
 }
