@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Carbon\Carbon;
 use App\Models\InvestmentPlanTier;
+use App\Models\Setting;
 
 class UserInvestment extends Model
 {
@@ -429,6 +430,47 @@ class UserInvestment extends Model
     public function getROIPercentage(): float
     {
         return ($this->total_return / $this->amount) * 100;
+    }
+
+    /**
+     * Get the expiry cap for this investment.
+     */
+    public function getExpiryCap(): float
+    {
+        $baseMultiplier = $this->expiry_multiplier ?? (float) Setting::getValue('package_expiry_multiplier', 3);
+        return floatval($this->amount) * $baseMultiplier;
+    }
+
+    /**
+     * Check if investment has reached its expiry cap.
+     */
+    public function hasReachedExpiryCap(): bool
+    {
+        $earningsAccumulated = floatval($this->earnings_accumulated ?? 0);
+        $expiryCap = $this->getExpiryCap();
+        return $earningsAccumulated >= $expiryCap;
+    }
+
+    /**
+     * Get remaining amount until expiry cap.
+     */
+    public function getRemainingUntilCap(): float
+    {
+        $earningsAccumulated = floatval($this->earnings_accumulated ?? 0);
+        $expiryCap = $this->getExpiryCap();
+        return max(0, $expiryCap - $earningsAccumulated);
+    }
+
+    /**
+     * Expire investment due to reaching cap.
+     */
+    public function expireDueToCap(): bool
+    {
+        return $this->update([
+            'status' => 'completed',
+            'status_reason' => 'Reached earnings cap',
+            'completed_at' => now(),
+        ]);
     }
 
     /*
