@@ -6,11 +6,11 @@
 $prefix: 'bs-';
 
 // Google Font Family link
-@import url('https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:ital,wght@0,400..800;1,400..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 
 // Font Family
-$font-family-primary: 'Wix Madefor Text', sans-serif;
-$font-family-secondary: 'Wix Madefor Text', sans-serif;
+$font-family-primary: 'Poppins', sans-serif;
+$font-family-secondary: 'Poppins', sans-serif;
 
 //
 // Color system
@@ -31,20 +31,21 @@ $black: #000000;
 // scss-docs-end gray-color-variables
 
 // scss-docs-start color-variables
-$blue: #1c84ee;
-$indigo: #53389f;
-$purple: #7f56da;
+$blue: #1e3a5f;
+$indigo: #2c4a7c;
+$purple: #5a4fcf;
 $pink: #ff86c8;
-$red: #ef5f5f;
-$orange: #ff6c2f;
-$yellow: #f9b931;
-$green: #22c55e;
-$teal: #040505;
-$cyan: #4ecac2;
+$red: #e74c3c;
+$orange: #f39c12;
+$yellow: #f1c40f;
+$green: #27ae60;
+$teal: #1abc9c;
+$cyan: #3498db;
+$navy: #1e3a5f;
 // scss-docs-end color-variables
 
 // scss-docs-start theme-color-variables
-$primary: $blue;
+$primary: $navy;
 $secondary: $gray-600;
 $blue: $blue;
 $indigo: $indigo;
