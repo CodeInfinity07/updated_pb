@@ -14,16 +14,21 @@ class InvestmentPlanProfitSharing extends Model
 
     protected $fillable = [
         'investment_plan_id',
-        'tier_id',
-        'percentage',
-        'frequency',
+        'investment_plan_tier_id',
+        'level_1_commission',
+        'level_2_commission',
+        'level_3_commission',
+        'max_commission_cap',
         'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'percentage' => 'decimal:2',
+            'level_1_commission' => 'decimal:2',
+            'level_2_commission' => 'decimal:2',
+            'level_3_commission' => 'decimal:2',
+            'max_commission_cap' => 'decimal:2',
             'is_active' => 'boolean',
         ];
     }
@@ -41,7 +46,7 @@ class InvestmentPlanProfitSharing extends Model
 
     public function tier(): BelongsTo
     {
-        return $this->belongsTo(InvestmentPlanTier::class, 'tier_id');
+        return $this->belongsTo(InvestmentPlanTier::class, 'investment_plan_tier_id');
     }
 
     /*
@@ -50,9 +55,19 @@ class InvestmentPlanProfitSharing extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function getFormattedPercentageAttribute(): string
+    public function getFormattedLevel1CommissionAttribute(): string
     {
-        return $this->percentage . '%';
+        return $this->level_1_commission . '%';
+    }
+
+    public function getFormattedLevel2CommissionAttribute(): string
+    {
+        return $this->level_2_commission . '%';
+    }
+
+    public function getFormattedLevel3CommissionAttribute(): string
+    {
+        return $this->level_3_commission . '%';
     }
 
     /*
@@ -73,6 +88,6 @@ class InvestmentPlanProfitSharing extends Model
 
     public function scopeForTier($query, $tierId)
     {
-        return $query->where('tier_id', $tierId);
+        return $query->where('investment_plan_tier_id', $tierId);
     }
 }

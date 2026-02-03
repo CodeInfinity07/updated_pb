@@ -155,11 +155,23 @@
                                 </div>
                                 <div class="card-body py-3">
                                     <div class="row text-center">
-                                        <div class="col-12">
-                                            <div class="fw-bold text-{{ $colors['text'] }}" style="font-size: 1.5rem;">
-                                                {{ number_format($profitShare->percentage ?? 0, 1) }}%
+                                        <div class="col-4">
+                                            <div class="fw-bold text-{{ $colors['text'] }}" style="font-size: 1.25rem;">
+                                                {{ number_format($profitShare->level_1_commission ?? 0, 1) }}%
                                             </div>
-                                            <small class="text-muted">Profit Share Rate ({{ ucfirst($profitShare->frequency ?? 'daily') }})</small>
+                                            <small class="text-muted">Level 1</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="fw-bold text-{{ $colors['text'] }}" style="font-size: 1.25rem;">
+                                                {{ number_format($profitShare->level_2_commission ?? 0, 1) }}%
+                                            </div>
+                                            <small class="text-muted">Level 2</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="fw-bold text-{{ $colors['text'] }}" style="font-size: 1.25rem;">
+                                                {{ number_format($profitShare->level_3_commission ?? 0, 1) }}%
+                                            </div>
+                                            <small class="text-muted">Level 3</small>
                                         </div>
                                     </div>
                                 </div>
