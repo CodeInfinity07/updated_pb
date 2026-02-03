@@ -394,29 +394,18 @@ class ReferralController extends Controller
     }
 
     /**
-     * Calculate earnings for a specific level using commission level settings
+     * Calculate earnings for a specific level using profit sharing settings
      */
     private function calculateLevelEarnings($user, $level)
     {
-        $commissionLevel = ReferralCommissionLevel::where('level', $level)
-            ->where('is_active', true)
-            ->first();
-        
-        if (!$commissionLevel) {
-            return 0;
-        }
-
-        $percentage = $commissionLevel->roi_percentage / 100;
-
-        $totalCommissions = Transaction::where('user_id', $user->id)
-            ->where('type', 'commission')
+        // Get profit share transactions for this user at the specified level
+        $levelEarnings = Transaction::where('user_id', $user->id)
+            ->where('type', 'profit_share')
             ->where('status', 'completed')
+            ->where('description', 'LIKE', "%Level $level%")
             ->sum('amount');
 
-        $totalLevels = ReferralCommissionLevel::where('is_active', true)->count();
-        $levelShare = $totalLevels > 0 ? $totalCommissions * $percentage : 0;
-
-        return $levelShare;
+        return $levelEarnings;
     }
 
     /**
