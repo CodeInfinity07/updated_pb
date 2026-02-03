@@ -697,6 +697,22 @@ class BotController extends Controller
                 'new_level' => $pendingUpgradeLevel,
                 'investment_amount' => $totalAmount
             ]);
+        } else {
+            // Also check for upgrade even if investment didn't exceed limit
+            // (user may have gained referrals since last investment)
+            $qualifyingLevel = $this->findHighestQualifyingTier($user);
+            if ($qualifyingLevel > $userLevel) {
+                $this->upgradeUserLevel($user, $qualifyingLevel);
+                $upgradedLevel = $qualifyingLevel;
+                $user->refresh();
+                $user->load('profile');
+                
+                Log::info('User auto-upgraded on merge based on referral qualifications', [
+                    'user_id' => $user->id,
+                    'old_level' => $userLevel,
+                    'new_level' => $qualifyingLevel
+                ]);
+            }
         }
 
         // Build success message
