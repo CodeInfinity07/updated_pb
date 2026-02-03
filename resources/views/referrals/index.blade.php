@@ -179,7 +179,7 @@
                         @empty
                             <div class="alert alert-info mb-0">
                                 <iconify-icon icon="mdi:information-outline" class="me-1"></iconify-icon>
-                                Profit share levels not configured yet.
+                                Profit share levels are not available for your current level. Upgrade your tier to unlock profit sharing benefits.
                             </div>
                         @endforelse
                     </div>
